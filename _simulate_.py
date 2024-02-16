@@ -23,32 +23,29 @@ class PointAcess: # Point Acess
   # Set coverage area
   @coverage_area.setter
   def coverage_area(self, new_coverage_area_:tuple):
+    
+    assert type(new_coverage_area_) == tuple and ( len(new_coverage_area_) >= 0 ) # New Coverage area must be an tuple with len positive
+    self.__coveragearea = np.zeros(new_coverage_area_)
 
-    if type(new_coverage_area_) == tuple and ( len(new_coverage_area_) >= 0 ):
-        
-        self.__coveragearea = np.zeros(new_coverage_area_)
 
-
-  # Position - AP
-  def position(self, position_:tuple):
-
-      if isinstance(position_, tuple) and ( len(position_) >= 0 ):
-
-          self.__coveragearea[position_[0]:position_[0] + 10, position_[1]:position_[1]+10] = 1
+  def position_ap(self, position_:tuple): # Position - AP
+    
+    assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
+    self.__coveragearea[position_[0]:position_[0] + 10, position_[1]:position_[1]+10] = 1
 
 
   # Get power
   @property
   def power(self):
+
     return self.__power
 
-  # Set channel
+  # Set power
   @power.setter
   def power(self, power__):
-
-    if not isinstance(power__, (str, bool, list, tuple)) and ( power__ >= 0 ): 
-      
-      self.__power = power__
+    
+    assert not isinstance(power__, (str, bool, list, tuple)) and ( power__ >= 0 ) # Power must be an number positive
+    self.__power = power__
 
 
 
@@ -58,12 +55,11 @@ class UserEquipments: # User Equipments
   def __init__(self, power_=1):
 
     assert not isinstance(power_, (str, bool, list, tuple)) and ( power_ >= 0 ) # Power must be an number positive
-    self.__channel = np.random.choice(PointAcess.channel) # Choose an channel in list of channels of the Class PointAcess
+    self.__channel = np.random.choice(PointAcess.channel) # Choose an channel
     self.__power = power_
 
   # Get channel
-  @property
-  def channel(self):
+  def get_channel(self):
 
     return self.__channel
 
@@ -77,19 +73,16 @@ class UserEquipments: # User Equipments
   # Set power
   @power.setter
   def power(self, power__):
+    
+    assert not isinstance(power__, (str, bool, list, tuple)) and ( power__ >= 0 ) # Power must be an number positive
+    self.__power = power__
 
-    if not isinstance(power__, (str, bool, list, tuple)) and ( power__ >= 0 ):
 
-      self.__power = power__
-
-
-  # Position - UE
-  def position(self, position_:tuple):
-
-      if isinstance(position_, tuple) and ( len(position_) >= 0 ):
-
-          self.__position = position_
-          return self.__position
+  def position_ue(self, position_:tuple): # Position - UE
+    
+    assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
+    self.__position = position_
+    return self.__position
 
 
 
@@ -111,8 +104,7 @@ class System: # System
   @aps.setter
   def aps(self, aps_: PointAcess):
 
-    assert isinstance(aps_, PointAcess) # AP must be an instance of the class PointAcess for be add on the list...
-
+    assert isinstance(aps_, PointAcess) # AP must be an instance of the class PointAcess for be add on the list
     self.__aps.append(aps_)
 
 
@@ -126,8 +118,7 @@ class System: # System
   @ues.setter
   def ues(self, ues: UserEquipments):
 
-    assert isinstance(ues, UserEquipments) # UE must be an instance of the class UserEquipments for be add on the list...
-
+    assert isinstance(ues, UserEquipments) # UE must be an instance of the class UserEquipments for be add on the list
     self.__ues.append(ues)
 
 
@@ -146,15 +137,14 @@ class Simulation: # Simulation
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
       
+  def position_AP(self, ap: PointAcess, pos__ap: tuple): # Position AP
 
-  # Position AP
-  def position_AP(self, ap: PointAcess, pos__ap: tuple):
-
-    assert isinstance(ap, PointAcess) and (isinstance(pos__ap, tuple) and ( len(pos__ap) >= 0 )) # ap must be an instance of the class PointAcess and have position like a tuple with len positive
+    assert isinstance(ap, PointAcess) # AP must be an instance of the class PointAcess
+    assert isinstance(pos__ap, tuple) and ( len(pos__ap) >= 0 ) # Position must be an tuple with len positive
       
     if (self.__coords.__contains__(pos__ap) == False):
         
-      ap.position = pos__ap
+      ap.position_ap = pos__ap
       self.__coords.append(pos__ap)
 
     else:
@@ -165,46 +155,44 @@ class Simulation: # Simulation
 
         if self.__coords.__contains__(pos__ap_) == False:
           
-          ap.position = pos__ap_
+          ap.position_ap = pos__ap_
           self.__coords.append(pos__ap_)
           break
 
 
-  # Position UE
-  def position_UE(self, ue: UserEquipments, ap:PointAcess, pos__ue=(0,0)):
+  def position_UE(self, ue: UserEquipments, ap:PointAcess, pos__ue=(0,0)): # Position UE
     
     radius = len(ap.coverage_area)
 
     if isinstance(ue, UserEquipments) and isinstance(ap, PointAcess) and isinstance(pos__ue, tuple) and len(pos__ue) >= 0:
       
-      if self.__coords.__contains__(pos__ue) == False and (((pos__ue[0] - ap.position[0]) ** 2 + (pos__ue[1] - ap.position[1]) ** 2) <= (radius ** 2)):
+      if self.__coords.__contains__(pos__ue) == False and (((pos__ue[0] - ap.position_ap[0]) ** 2 + (pos__ue[1] - ap.position_ap[1]) ** 2) <= (radius ** 2)):
         
-        ue.position = pos__ue
+        ue.position_ue = pos__ue
         self.__coords.append(pos__ue)
 
       else:
-         
-         while True:
-
-          pos__ue = ((np.random.uniform(ap.position[0] - radius, ap.position[0] + radius), np.random.uniform(ap.position[1] - radius, ap.position[1] + radius)))
-
-          if self.__coords.__contains__(pos__ue) == False and (((pos__ue[0] - ap.position[0]) ** 2 + (pos__ue[1] - ap.position[1]) ** 2) <= (radius ** 2)):
+        
+        while True:
+          
+          pos__ue = ((np.random.uniform(ap.position_ap[0] - radius, ap.position_ap[0] + radius), np.random.uniform(ap.position_ap[1] - radius, ap.position_ap[1] + radius)))
+          
+          if self.__coords.__contains__(pos__ue) == False and (((pos__ue[0] - ap.position_ap[0]) ** 2 + (pos__ue[1] - ap.position_ap[1]) ** 2) <= (radius ** 2)):
             
-            ue.position = pos__ue
+            ue.position_ue = pos__ue
             self.__coords.append(pos__ue)
             break
 
 
-  # Calcule distance AP-UE
-  def distance_ue_ap_(self, ap: PointAcess, ue: UserEquipments):
-
+  def distance_ue_ap_(self, ap: PointAcess, ue: UserEquipments): # Calcule distance UE-AP
+    
     if isinstance(ap, PointAcess) and isinstance(ue, UserEquipments):
       
-      distance_ue_ap = sqrt( ( ( ( ue.position[0] - ap.position[0] ) ** 2 ) ) + ( ( ( ue.position[1] - ap.position[1] ) ** 2 ) ) )  # Distance between UE and AP
-
+      distance_ue_ap = sqrt( ( ( ( ue.position_ue[0] - ap.position_ap[0] ) ** 2 ) ) + ( ( ( ue.position_ue[1] - ap.position_ap[1] ) ** 2 ) ) ) # Distance UE-AP
+      
       if distance_ue_ap >= self.do:  # Distance must be bigger or equal than the fixed reference distance ( 1 meter )
-
-          return distance_ue_ap
+        
+        return distance_ue_ap
       
 
 
@@ -237,15 +225,15 @@ if __name__ == "__main__":
 
   for i, ue in enumerate(ues_):
     
-    print(f"Position UE {i+1} : {ue.position}") # Position UE
-    print(f"UE {i+1} Channel: {ue.channel}") # Channel UE 
+    print(f"Position UE {i+1} : {ue.position_ue}") # Position UE
+    print(f"UE {i+1} Channel: {ue.get_channel()}") # Channel UE 
     print(f"Distance AP-UE {i+1} : {simulate.distance_ue_ap_(AP, ue)}m") # Distance AP-UE
       
-    for j, ues in enumerate(ues_):
+    for j, ues in enumerate(ues_): 
       
-      if ( ( ues.channel == ue.channel ) and ( ues != ue ) ):
+      if ( ( ues.get_channel() == ue.get_channel() ) and ( ues != ue ) ):
         
-        distance_ues = sqrt( ( ( ( ues.position[0] - ue.position[0] ) ** (2) ) + ( ( ues.position[1] - ue.position[1] ) ** (2) ) ) ) # Distance UE-Others_UEs
+        distance_ues = sqrt( ( ( ( ues.position_ue[0] - ue.position_ue[0] ) ** (2) ) + ( ( ues.position_ue[1] - ue.position_ue[1] ) ** (2) ) ) ) # Distance UE-Others_UEs
         print(f"\nDistance between UE {i+1} and UE {j+1} : {distance_ues}m")
         interference_ = 0
         interference_ += ( AP.power *  ( ( distance_ues / ( simulate.do ) ** ( simulate.n ) ) ) ) # interference totally
@@ -269,27 +257,26 @@ if __name__ == "__main__":
             print(f"Signal-to-interference-Noise ratio(SINR): {sinr}db") ; sinrs.append(sinr)
             print(f"Capacity: {capacity}") ; capacities.append(capacity) ; print("- "*80)
 
-      all_ = []
-      all_.append([powers, snrs, sirs, sinrs, capacities]) # Collect all results
+            all_ = []
+            all_.append([powers, snrs, sirs, sinrs, capacities]) # Collect all results
 
   fig, axs = plt.subplots(2, 3, figsize=(18, 10)) # Graphic
 
   for ap in system.aps:
 
-    axs[0, 0].scatter(ap.position[0], ap.position[1], color='red', marker=',')
-    cove_area = plt.Circle(ap.position, radius=len(ap.coverage_area), alpha=0.2)
+    axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
+    cove_area = plt.Circle(ap.position_ap, radius=len(ap.coverage_area), alpha=0.2)
     axs[0, 0].add_patch(cove_area) ; axs[0, 0].set_xlim(-1000, 1000) ; axs[0, 0].set_ylim(-1000, 1000) ; axs[0,0].set_title("Simulate")
 
     for ue in system.ues:
 
-        axs[0, 0].scatter(ue.position[0], ue.position[1], color='black', marker='.')
+        axs[0, 0].scatter(ue.position_ue[0], ue.position_ue[1], color='black', marker='.')
 
-  for result, label, row, col in zip([powers, snrs, sirs, sinrs, capacities], ['Power', 'SNR', 'SIR', 'SINR', 'Capacity'], [0, 0, 1, 1, 1], [1, 2, 0, 1, 2]):
+    for result, label, row, col in zip([powers, snrs, sirs, sinrs, capacities], ['Power', 'SNR', 'SIR', 'SINR', 'Capacity'], [0, 0, 1, 1, 1], [1, 2, 0, 1, 2]):
       
       filtered_result = [value for value in result if value is not None] ; filtered_result.sort()
-    
+
       cumulative_prob = np.linspace(0, 1, len(filtered_result))
-      axs[row, col].plot(filtered_result, cumulative_prob, label=f"CDF - {label}")
-      axs[row, col].set_title(f"CDF - {label}")
+      axs[row, col].plot(filtered_result, cumulative_prob, label=f"CDF - {label}") ; axs[row, col].set_title(f"CDF - {label}")
 
   plt.show()
