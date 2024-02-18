@@ -1,5 +1,4 @@
 # Simulation Monte Carlo - Cellular Wireless Communication Systems
-
 import numpy as np ; import matplotlib.pyplot as plt ; from math import sqrt,log10,log2
 
 class PointAcess: # Point Acess
@@ -28,12 +27,6 @@ class PointAcess: # Point Acess
     self.__coveragearea = np.zeros(new_coverage_area_)
 
 
-  def position_ap(self, position_:tuple): # Position - AP
-    
-    assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
-    self.__coveragearea[position_[0]:position_[0] + 10, position_[1]:position_[1]+10] = 1
-
-
   # Get power
   @property
   def power(self):
@@ -48,6 +41,12 @@ class PointAcess: # Point Acess
     self.__power = power__
 
 
+  def position_ap(self, position_:tuple): # Position - AP
+    
+    assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
+    self.__coveragearea[position_[0]:position_[0] + 10, position_[1]:position_[1]+10] = 1
+
+
 
 class UserEquipments: # User Equipments
 
@@ -57,12 +56,6 @@ class UserEquipments: # User Equipments
     assert not isinstance(power_, (str, bool, list, tuple)) and ( power_ >= 0 ) # Power must be an number positive
     self.__channel = np.random.choice(PointAcess.channel) # Choose an channel
     self.__power = power_
-
-  # Get channel
-  def get_channel(self):
-
-    return self.__channel
-
 
   # Get power
   @property
@@ -85,7 +78,13 @@ class UserEquipments: # User Equipments
     return self.__position
 
 
+  # Get channel
+  def get_channel(self):
 
+    return self.__channel
+  
+
+  
 class System: # System
 
   # class constructor
