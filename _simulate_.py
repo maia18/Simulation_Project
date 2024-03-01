@@ -116,6 +116,29 @@ class System: # System
     self.__aps.extend(aps_)
 
 
+  def add_aps(self, num_aps: int, coverage_area: tuple, power: int, min_distance: float):
+      assert num_aps > 0
+      assert min_distance > 0
+
+      aps = []
+      for _ in range(num_aps):
+          ap = PointAcess(coverage_area, power)
+          self._set_ap_position(aps, ap, min_distance)
+          aps.append(ap)
+
+      self.__aps.extend(aps)
+
+  def _set_ap_position(self, existing_aps, new_ap, min_distance):
+      while True:
+          position = (np.random.uniform(0, new_ap.coverage_area[0]), np.random.uniform(0, new_ap.coverage_area[1]))
+
+          min_distance_satisfied = all(sqrt((position[0] - ap.position_ap[0]) ** 2 + (position[1] - ap.position_ap[1]) ** 2) >= min_distance for ap in existing_aps)
+
+          if min_distance_satisfied:
+              new_ap.position_ap = position
+              break
+
+
   # Get UE's
   @property
   def ues(self):
@@ -220,20 +243,15 @@ if __name__ == "__main__":
   sinrs = [] # sinrs totallys
   capacities = [] # capacities totallys
 
-  AP = PointAcess((400,400), 10)
-  AP2 = PointAcess((100,100), 10)
-  AP3= PointAcess((600,600), 10)
-  AP4 = PointAcess((800,800), 10)
-
-  aps = [AP, AP2, AP3, AP4]
-
   system = System()
-  system.aps = aps
-
   simulate = Simulation(system)
-  simulate.AP_position(system.aps)
 
-  noise_power = ( ( simulate.ko ) * ( simulate.bt / len( AP.channel ) ) if len( AP.channel ) >= 0 else None ) # Noise power
+  system.add_aps(4, (200, 200), 10, 100)
+
+  for i, ap in enumerate(system.aps):
+      print(f"AP {i+1} - Position: {ap.position_ap}")
+
+  noise_power = ( ( simulate.ko ) * ( simulate.bt / len( ap.channel ) ) if len( ap.channel ) >= 0 else None ) # Noise power
   print(f'Noise Power: {noise_power}W \n')
 
   num_ue = 100 # Amount of UEs
@@ -251,9 +269,9 @@ if __name__ == "__main__":
     
     print(f"Position UE {i+1} : {ue.position_ue}") # Position UE
     print(f"UE {i+1} Channel: {ue.get_channel()}") # Channel UE 
-    print(f"Distance UE{i+1}-AP  : {simulate.distance_ue_ap_(AP, ue)}m") # Distance AP-UE
+    print(f"Distance UE{i+1}-AP  : {simulate.distance_ue_ap_(ap, ue)}m") # Distance AP-UE
       
-    power = ( ue.power * ( simulate.k / ( simulate.distance_ue_ap_(AP, ue) ** ( simulate.n ) ) ) ) # Power in Watts
+    power = ( ue.power * ( simulate.k / ( simulate.distance_ue_ap_(ap, ue) ** ( simulate.n ) ) ) ) # Power in Watts
     
     print(f"Power UE{i+1}: {power}W") ; powers.append(power)
         
@@ -263,7 +281,7 @@ if __name__ == "__main__":
 
       if ( ( ues.get_channel() == ue.get_channel() ) and ( ues != ue ) ):
         
-        distance_ues_ap = sqrt( ( ( ( ues.position_ue[0] - AP.position_ap[0] ) ** (2) ) + ( ( ues.position_ue[1] - AP.position_ap[1] ) ** (2) ) ) ) # Distance Others_UEs-AP
+        distance_ues_ap = sqrt( ( ( ( ues.position_ue[0] - ap.position_ap[0] ) ** (2) ) + ( ( ues.position_ue[1] - ap.position_ap[1] ) ** (2) ) ) ) # Distance Others_UEs-AP
         print(f"\nDistance between UE {j+1} and AP: {distance_ues_ap}m")
         interference_ += ( ues.power *  ( ( distance_ues_ap / ( simulate.do ) ** ( simulate.n ) ) ) ) # interference totally
         print(f"Interference between UE {j+1} and AP: {interference_}\n")
@@ -273,7 +291,7 @@ if __name__ == "__main__":
           snr = ( 10 ) * log10( ( ( power / noise_power ) ) ) # SNR
           sir = ( 10 ) * log10( ( power / interference_ ) ) # SIR
           sinr = ( 10 ) * log10( ( power / ( interference_ + noise_power ) ) ) # SINR
-          capacity = ( simulate.bt / len(AP.channel) ) * ( log2(1 + ( 10**(sinr/10) ) ) ) # Capacity
+          capacity = ( simulate.bt / len(ap.channel) ) * ( log2(1 + ( 10**(sinr/10) ) ) ) # Capacity
             
           print(f"Signal-to-noise ratio(SNR): {snr}db") ; snrs.append(snr)
           print(f"Signal-to-interference ratio(SIR): {sir}db") ; sirs.append(sir)
@@ -287,10 +305,18 @@ if __name__ == "__main__":
 
   for ap in system.aps:
 
+    # height, width = ap.coverage_area
+    # axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
+    # cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.2)
+    # axs[0, 0].add_patch(cove_area) ; axs[0, 0].set_xlim(-1000, 1000) ; axs[0, 0].set_ylim(-1000, 1000) ; axs[0,0].set_title("Simulate")
     height, width = ap.coverage_area
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
-    cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0)
-    axs[0, 0].add_patch(cove_area) ; axs[0, 0].set_xlim(-1000, 1000) ; axs[0, 0].set_ylim(-1000, 1000) ; axs[0,0].set_title("Simulate")
+    cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.2)
+    axs[0, 0].add_patch(cove_area)
+    axs[0, 0].set_xlim(-1000, 1000)
+    axs[0, 0].set_ylim(-1000, 1000)
+    axs[0, 0].set_title("Simulate")
+
 
     for ue in system.ues:
 
