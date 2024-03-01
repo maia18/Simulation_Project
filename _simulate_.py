@@ -44,9 +44,16 @@ class PointAcess: # Point Acess
   def position_ap(self, position_:tuple): # Position - AP
     
     assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
-    self.__position = position_
-    self.__coveragearea[self.__position[0]:self.__position[0] + 10, self.__position[1]:self.__position[1]+10] = 1
-    return self.__position
+
+    height, width = self.coverage_area
+
+    if 0 <= position_[0] < height and 0 <= position_[1] < width:
+        self.__position = position_
+        self.__coveragearea[self.__position[0]:self.__position[0] + 10, self.__position[1]:self.__position[1] + 10] = 1
+        return self.__position
+    
+    else:
+        raise AssertionError("Posição fora da área de cobertura")
 
 
 
@@ -103,10 +110,10 @@ class System: # System
 
   # Set AP's
   @aps.setter
-  def aps(self, aps_: PointAcess):
+  def aps(self, aps_: list[PointAcess]):
 
-    assert isinstance(aps_, PointAcess) # AP must be an instance of the class PointAcess for be add on the list
-    self.__aps.append(aps_)
+    assert isinstance(aps_, list) # AP must be an instance of the class PointAcess for be add on the list
+    self.__aps.extend(aps_)
 
 
   # Get UE's
@@ -138,30 +145,32 @@ class Simulation: # Simulation
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
       
-  def AP_position(self, aps: list[PointAcess]): # Position AP
-
-    for ap in aps:
-
-      assert isinstance(ap, PointAcess) # AP must be an instance of the class PointAcess
-          
-      while True:
+  def AP_position(self, ap: list[PointAcess]): # Position AP
       
-        pos__ap = ((np.random.randint(0, len(ap.coverage_area)), np.random.randint(0, len(ap.coverage_area))))
+      assert isinstance(ap, list) # ap must be an instance of the PointAcess
 
-        if self.__coords.__contains__(pos__ap) == False:
-            
-          ap.position_ap = pos__ap
-          self.__coords.append(pos__ap)
-          break
+      for aps in ap:
+
+        while True:
+                    
+          pos__ap = ((np.random.randint(0, len(aps.coverage_area)), np.random.randint(0, len(aps.coverage_area))))
+
+          if self.__coords.__contains__(pos__ap) == False:
+                
+            aps.position_ap = pos__ap
+            self.__coords.append(pos__ap)
+            break  
 
 
-  def UE_position(self, ue: UserEquipments, ap: PointAcess, pos__ue=(0,0)): # Position UE
-  
-    height, width = (ap.coverage_area)
+  def UE_position(self, ue: UserEquipments, aps: list[PointAcess], pos__ue=(0,0)): # Position UE
 
-    if isinstance(ue, UserEquipments) and isinstance(ap, PointAcess) and isinstance(pos__ue, tuple) and len(pos__ue) >= 0:
+    height, width = aps[0].coverage_area
+
+    if isinstance(ue, UserEquipments) and isinstance(pos__ue, tuple) and len(pos__ue) >= 0:
         
         while True:
+          
+          ap = np.random.choice(aps)
           
           pos__ue = ((np.random.uniform(ap.position_ap[0] - min(height, width), ap.position_ap[0] + min(height, width)), np.random.uniform(ap.position_ap[1] - min(height, width), ap.position_ap[1] + min(height, width))))
           
@@ -179,16 +188,18 @@ class Simulation: # Simulation
   def distance_ue_ap_(self, ap: PointAcess, ue: UserEquipments): # Calcule distance UE-AP
     
     if isinstance(ap, PointAcess) and isinstance(ue, UserEquipments):
-      
-      distance_ue_ap = sqrt( ( ( ( ue.position_ue[0] - ap.position_ap[0] ) ** 2 ) ) + ( ( ( ue.position_ue[1] - ap.position_ap[1] ) ** 2 ) ) ) # Distance UE-AP
-      
-      if distance_ue_ap >= self.do:  # Distance must be bigger or equal than the fixed reference distance ( 1 meter )
-        
-        return distance_ue_ap
-      
-      else:
 
-        raise ValueError('Distance lower than 1 meter!')
+      for ap_ in system.aps:  
+        
+        distance_ue_ap = sqrt( ( ( ( ue.position_ue[0] - ap_.position_ap[0] ) ** 2 ) ) + ( ( ( ue.position_ue[1] - ap_.position_ap[1] ) ** 2 ) ) ) # Distance UE-AP
+      
+        if distance_ue_ap >= self.do:  # Distance must be bigger or equal than the fixed reference distance ( 1 meter )
+        
+          return distance_ue_ap
+      
+        else:
+
+          raise ValueError('Distance lower than 1 meter!')
       
 
 
@@ -205,14 +216,18 @@ if __name__ == "__main__":
   AP3= PointAcess((600,600), 10)
   AP4 = PointAcess((800,800), 10)
 
+  aps = [AP, AP2, AP3, AP4]
+
   system = System()
-  system.aps = AP
-  system.aps = AP2
-  system.aps = AP3
-  system.aps = AP4
+  system.aps = aps
+  # system.aps = AP2
+  # system.aps = AP3
+  # system.aps = AP4
+
+  aps = system.aps
 
   simulate = Simulation(system)
-  simulate.AP_position(system.aps)
+  simulate.AP_position(aps)
 
   noise_power = ( ( simulate.ko ) * ( simulate.bt / len( AP.channel ) ) if len( AP.channel ) >= 0 else None ) # Noise power
   print(f'Noise Power: {noise_power}W \n')
@@ -226,7 +241,7 @@ if __name__ == "__main__":
     
   for i in range(num_ue):
     
-    simulate.UE_position(ues_[i], AP)
+    simulate.UE_position(ues_[i], aps)
 
   for i, ue in enumerate(ues_):
     
