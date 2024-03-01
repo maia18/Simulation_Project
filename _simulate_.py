@@ -180,7 +180,7 @@ class Simulation: # Simulation
           
           pos__ue = ((np.random.uniform(ap.position_ap[0] - radius, ap.position_ap[0] + radius), np.random.uniform(ap.position_ap[1] - radius, ap.position_ap[1] + radius)))
           
-          if self.__coords.__contains__(pos__ue) == False and (((pos__ue[0] - ap.position_ap[0]) ** 2 + (pos__ue[1] - ap.position_ap[1]) ** 2) <= (radius ** 2)):
+          if (self.__coords.__contains__(pos__ue) == False) and (((pos__ue[0] - ap.position_ap[0]) ** 2 + (pos__ue[1] - ap.position_ap[1]) ** 2) <= (radius ** 2)):
             
             distance_ue_ap = sqrt( ( ( ( pos__ue[0]- ap.position_ap[0] ) ** 2 ) ) + ( ( ( pos__ue[1] - ap.position_ap[1] ) ** 2 ) ) ) # Distance UE-AP
 
@@ -200,6 +200,10 @@ class Simulation: # Simulation
       if distance_ue_ap >= self.do:  # Distance must be bigger or equal than the fixed reference distance ( 1 meter )
         
         return distance_ue_ap
+      
+      else:
+
+        raise ValueError('Distance lower than 1 meter!')
       
 
 
