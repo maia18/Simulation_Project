@@ -302,15 +302,18 @@ if __name__ == "__main__":
           all_.append([powers, snrs, sirs, sinrs, capacities]) # Collect all results
 
   fig, axs = plt.subplots(2, 3, figsize=(18, 10)) # Graphic
+  # axs[0, 0].grid(True)  # For the top-left subplot
+  # axs[1, 1].grid(True)  # For the bottom-right subplot
 
   for ap in system.aps:
-    
+
     height, width = ap.coverage_area
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
     cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0)
     axs[0, 0].add_patch(cove_area)
     axs[0, 0].set_xlim(-1000, 1000)
     axs[0, 0].set_ylim(-1000, 1000)
+    axs[0, 0].grid(True)
     axs[0, 0].set_title("Simulate")
 
     for ue in system.ues:
@@ -319,9 +322,11 @@ if __name__ == "__main__":
 
     for result, label, row, col in zip([powers, snrs, sirs, sinrs, capacities], ['Power', 'SNR', 'SIR', 'SINR', 'Capacity'], [0, 0, 1, 1, 1], [1, 2, 0, 1, 2]):
       
-      filtered_result = [value for value in result if value is not None] ; filtered_result.sort()
-
+      filtered_result = [value for value in result if value is not None]
+      filtered_result.sort()
       cumulative_prob = np.linspace(0, 1, len(filtered_result))
-      axs[row, col].plot(filtered_result, cumulative_prob, label=f"CDF - {label}") ; axs[row, col].set_title(f"CDF - {label}")
+      axs[row, col].plot(filtered_result, cumulative_prob, label=f"CDF - {label}")
+      axs[row, col].set_title(f"CDF - {label}")
+      axs[row, col].grid(True)
 
   plt.show()
