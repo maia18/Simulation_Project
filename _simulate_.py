@@ -246,7 +246,7 @@ if __name__ == "__main__":
   system = System()
   simulate = Simulation(system)
 
-  system.add_aps(2, (200, 200), 10, 100)
+  system.add_aps(5, (200, 200), 10, 500)
 
   for i, ap in enumerate(system.aps):
       print(f"AP {i+1} - Position: {ap.position_ap}")
@@ -304,11 +304,7 @@ if __name__ == "__main__":
   fig, axs = plt.subplots(2, 3, figsize=(18, 10)) # Graphic
 
   for ap in system.aps:
-
-    # height, width = ap.coverage_area
-    # axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
-    # cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.2)
-    # axs[0, 0].add_patch(cove_area) ; axs[0, 0].set_xlim(-1000, 1000) ; axs[0, 0].set_ylim(-1000, 1000) ; axs[0,0].set_title("Simulate")
+    
     height, width = ap.coverage_area
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
     cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0)
@@ -316,7 +312,6 @@ if __name__ == "__main__":
     axs[0, 0].set_xlim(-1000, 1000)
     axs[0, 0].set_ylim(-1000, 1000)
     axs[0, 0].set_title("Simulate")
-
 
     for ue in system.ues:
 
