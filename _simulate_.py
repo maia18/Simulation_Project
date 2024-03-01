@@ -206,7 +206,7 @@ if __name__ == "__main__":
   sinrs = [] # sinrs totallys
   capacities = [] # capacities totallys
 
-  AP = PointAcess((1000,1000), 10)
+  AP = PointAcess((400,400), 10)
 
   system = System()
   system.aps = AP
@@ -214,7 +214,10 @@ if __name__ == "__main__":
   simulate = Simulation(system)
   simulate.AP_position(AP, (0,0))
 
-  num_ue = 120 # Amount of UEs
+  noise_power = ( ( simulate.ko ) * ( simulate.bt / len( AP.channel ) ) if len( AP.channel ) >= 0 else None ) # Noise power
+  print(f'Noise Power: {noise_power}W \n')
+
+  num_ue = 100 # Amount of UEs
   ues_ = [UserEquipments() for _ in range(num_ue)]
 
   for ue in ues_:
@@ -232,7 +235,6 @@ if __name__ == "__main__":
     print(f"Distance UE{i+1}-AP  : {simulate.distance_ue_ap_(AP, ue)}m") # Distance AP-UE
       
     power = ( ue.power * ( simulate.k / ( simulate.distance_ue_ap_(AP, ue) ** ( simulate.n ) ) ) ) # Power in Watts
-    noise_power = ( ( simulate.ko ) * ( simulate.bt / len( AP.channel ) ) if len( AP.channel ) >= 0 else None ) # Noise power
     
     print(f"Power UE{i+1}: {power}W") ; powers.append(power)
         
@@ -242,12 +244,12 @@ if __name__ == "__main__":
 
       if ( ( ues.get_channel() == ue.get_channel() ) and ( ues != ue ) ):
         
-        distance_ues = sqrt( ( ( ( ues.position_ue[0] - ue.position_ue[0] ) ** (2) ) + ( ( ues.position_ue[1] - ue.position_ue[1] ) ** (2) ) ) ) # Distance UE-Others_UEs
-        print(f"\nDistance between UE {i+1} and UE {j+1} : {distance_ues}m")
-        interference_ += ( ue.power *  ( ( distance_ues / ( simulate.do ) ** ( simulate.n ) ) ) ) # interference totally
-        print(f"Interference between UE {i+1} and UE {j+1} : {interference_}\n")
+        distance_ues_ap = sqrt( ( ( ( ues.position_ue[0] - AP.position_ap[0] ) ** (2) ) + ( ( ues.position_ue[1] - AP.position_ap[1] ) ** (2) ) ) ) # Distance Others_UEs-AP
+        print(f"\nDistance between UE {j+1} and AP: {distance_ues_ap}m")
+        interference_ += ( ues.power *  ( ( distance_ues_ap / ( simulate.do ) ** ( simulate.n ) ) ) ) # interference totally
+        print(f"Interference between UE {j+1} and AP: {interference_}\n")
       
-        if ( interference_ >= 0 ):
+        if interference_ >= 0:
           
           snr = ( 10 ) * log10( ( ( power / noise_power ) ) ) # SNR
           sir = ( 10 ) * log10( ( power / interference_ ) ) # SIR
