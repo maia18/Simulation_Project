@@ -276,7 +276,7 @@ if __name__ == "__main__":
   for ap in system.aps:
 
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
-    cove_area = plt.Circle(ap.position_ap, radius=len(ap.coverage_area), alpha=0.2)
+    cove_area = plt.Circle(ap.position_ap, radius = ap.radius_calc(ap.coverage_area), alpha=0.2)
     axs[0, 0].add_patch(cove_area) ; axs[0, 0].set_xlim(-1000, 1000) ; axs[0, 0].set_ylim(-1000, 1000) ; axs[0,0].set_title("Simulate")
 
     for ue in system.ues:
