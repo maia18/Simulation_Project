@@ -138,32 +138,26 @@ class Simulation: # Simulation
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
       
-  def AP_position(self, ap: PointAcess, pos__ap: tuple): # Position AP
+  def AP_position(self, aps: list[PointAcess]): # Position AP
 
-    assert isinstance(ap, PointAcess) # AP must be an instance of the class PointAcess
-    assert isinstance(pos__ap, tuple) and ( len(pos__ap) >= 0 ) # Position must be an tuple with len positive
-      
-    if (self.__coords.__contains__(pos__ap) == False):
-        
-      ap.position_ap = pos__ap
-      self.__coords.append(pos__ap)
+    for ap in aps:
 
-    else:
+      assert isinstance(ap, PointAcess) # AP must be an instance of the class PointAcess
           
       while True:
-        
-        pos__ap_ = ((np.random.randint(0, ...), np.random.randint(0, ...)))
+      
+        pos__ap = ((np.random.randint(0, len(ap.coverage_area)), np.random.randint(0, len(ap.coverage_area))))
 
-        if self.__coords.__contains__(pos__ap_) == False:
-          
-          ap.position_ap = pos__ap_
-          self.__coords.append(pos__ap_)
+        if self.__coords.__contains__(pos__ap) == False:
+            
+          ap.position_ap = pos__ap
+          self.__coords.append(pos__ap)
           break
 
 
   def UE_position(self, ue: UserEquipments, ap: PointAcess, pos__ue=(0,0)): # Position UE
   
-    height, width = ap.coverage_area
+    height, width = (ap.coverage_area)
 
     if isinstance(ue, UserEquipments) and isinstance(ap, PointAcess) and isinstance(pos__ue, tuple) and len(pos__ue) >= 0:
         
@@ -207,12 +201,18 @@ if __name__ == "__main__":
   capacities = [] # capacities totallys
 
   AP = PointAcess((400,400), 10)
+  AP2 = PointAcess((100,100), 10)
+  AP3= PointAcess((600,600), 10)
+  AP4 = PointAcess((800,800), 10)
 
   system = System()
   system.aps = AP
+  system.aps = AP2
+  system.aps = AP3
+  system.aps = AP4
 
   simulate = Simulation(system)
-  simulate.AP_position(AP, (0,0))
+  simulate.AP_position(system.aps)
 
   noise_power = ( ( simulate.ko ) * ( simulate.bt / len( AP.channel ) ) if len( AP.channel ) >= 0 else None ) # Noise power
   print(f'Noise Power: {noise_power}W \n')
@@ -271,7 +271,7 @@ if __name__ == "__main__":
     height, width = ap.coverage_area
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
     cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.25)
-    axs[0, 0].add_patch(cove_area) ; axs[0, 0].set_xlim(-ap.coverage_area[0], ap.coverage_area[0]) ; axs[0, 0].set_ylim(-ap.coverage_area[1], ap.coverage_area[1]) ; axs[0,0].set_title("Simulate")
+    axs[0, 0].add_patch(cove_area) ; axs[0, 0].set_xlim(-1000, 1000) ; axs[0, 0].set_ylim(-1000, 1000) ; axs[0,0].set_title("Simulate")
 
     for ue in system.ues:
 
