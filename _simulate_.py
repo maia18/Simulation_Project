@@ -50,10 +50,12 @@ class PointAcess: # Point Acess
     self.__power = power__
 
 
-  # def position_ap(self, position_:tuple): # Position - AP
+  def position_ap(self, position_:tuple): # Position - AP
     
-  #   assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
-  #   self.__coveragearea[position_[0]:position_[0] + 10, position_[1]:position_[1]+10] = 1
+    assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
+    self.__position = position_
+    self.__coveragearea[position_[0]:position_[0] + 10, position_[1]:position_[1]+10] = 1
+    return self.__position
 
 
 
@@ -145,7 +147,7 @@ class Simulation: # Simulation
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
       
-  def position_AP(self, ap: PointAcess, pos__ap: tuple): # Position AP
+  def AP_position(self, ap: PointAcess, pos__ap: tuple): # Position AP
 
     assert isinstance(ap, PointAcess) # AP must be an instance of the class PointAcess
     assert isinstance(pos__ap, tuple) and ( len(pos__ap) >= 0 ) # Position must be an tuple with len positive
@@ -168,7 +170,7 @@ class Simulation: # Simulation
           break
 
 
-  def position_UE(self, ue: UserEquipments, ap:PointAcess, pos__ue=(0,0)): # Position UE
+  def UE_position(self, ue: UserEquipments, ap:PointAcess, pos__ue=(0,0)): # Position UE
     
     radius = PointAcess.radius_calc(ap.coverage_area) # Radius of the coverage area 
 
@@ -215,7 +217,7 @@ if __name__ == "__main__":
   system.aps = AP
 
   simulate = Simulation(system)
-  simulate.position_AP(AP, (0,0))
+  simulate.AP_position(AP, (0,0))
 
   num_ue = 100 # Amount of UEs
   ues_ = [UserEquipments() for _ in range(num_ue)]
@@ -226,7 +228,7 @@ if __name__ == "__main__":
     
   for i in range(num_ue):
     
-    simulate.position_UE(ues_[i], AP)
+    simulate.UE_position(ues_[i], AP)
 
   for i, ue in enumerate(ues_):
     
