@@ -129,13 +129,14 @@ class System: # System
       self.__aps.extend(aps)
 
   def _set_ap_position(self, existing_aps, new_ap, min_distance):
+      
       while True:
-          position = (np.random.uniform(0, new_ap.coverage_area[0]), np.random.uniform(0, new_ap.coverage_area[1]))
+          pos__ap = ((np.random.randint(-1000, 1000), np.random.randint(-1000, 1000)))
 
-          min_distance_satisfied = all(sqrt((position[0] - ap.position_ap[0]) ** 2 + (position[1] - ap.position_ap[1]) ** 2) >= min_distance for ap in existing_aps)
+          min_distance_satisfied = all(sqrt((pos__ap[0] - ap.position_ap[0]) ** 2 + (pos__ap[1] - ap.position_ap[1]) ** 2) >= min_distance for ap in existing_aps)
 
           if min_distance_satisfied:
-              new_ap.position_ap = position
+              new_ap.position_ap = pos__ap
               break
 
 
@@ -168,21 +169,20 @@ class Simulation: # Simulation
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
       
-  def AP_position(self, ap: list[PointAcess]): # Position AP
+  # def AP_position(self, ap: list[PointAcess]): # Position AP
       
-      assert isinstance(ap, list) # ap must be an instance of the PointAcess
+  #     assert isinstance(ap, list) # ap must be an instance of the PointAcess
 
-      for aps in ap:
+  #     for aps in ap:
 
-        while True:
+  #       while True:
                     
-          pos__ap = ((np.random.randint(-1000, 1000), np.random.randint(-1000, 1000)))
 
-          if self.__coords.__contains__(pos__ap) == False:
+  #         if self.__coords.__contains__(pos__ap) == False:
                 
-            aps.position_ap = pos__ap
-            self.__coords.append(pos__ap)
-            break  
+  #           aps.position_ap = pos__ap
+  #           self.__coords.append(pos__ap)
+  #           break  
 
 
   def UE_position(self, ue: UserEquipments, aps: list[PointAcess], pos__ue=(0,0)): # Position UE
@@ -246,7 +246,7 @@ if __name__ == "__main__":
   system = System()
   simulate = Simulation(system)
 
-  system.add_aps(4, (200, 200), 10, 100)
+  system.add_aps(2, (200, 200), 10, 100)
 
   for i, ap in enumerate(system.aps):
       print(f"AP {i+1} - Position: {ap.position_ap}")
@@ -254,7 +254,7 @@ if __name__ == "__main__":
   noise_power = ( ( simulate.ko ) * ( simulate.bt / len( ap.channel ) ) if len( ap.channel ) >= 0 else None ) # Noise power
   print(f'Noise Power: {noise_power}W \n')
 
-  num_ue = 100 # Amount of UEs
+  num_ue = 10 # Amount of UEs
   ues_ = [UserEquipments() for _ in range(num_ue)]
 
   for ue in ues_:
@@ -311,7 +311,7 @@ if __name__ == "__main__":
     # axs[0, 0].add_patch(cove_area) ; axs[0, 0].set_xlim(-1000, 1000) ; axs[0, 0].set_ylim(-1000, 1000) ; axs[0,0].set_title("Simulate")
     height, width = ap.coverage_area
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
-    cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.2)
+    cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0)
     axs[0, 0].add_patch(cove_area)
     axs[0, 0].set_xlim(-1000, 1000)
     axs[0, 0].set_ylim(-1000, 1000)
