@@ -30,10 +30,10 @@ class PointAcess: # Point Acess
 
   # Set coverage area
   @coverage_area.setter
-  def coverage_area(self, new_coverage_area_:tuple):
+  def coverage_area(self, coverage_area_:tuple):
     
-    assert type(new_coverage_area_) == tuple and ( len(new_coverage_area_) >= 0 ) # New Coverage area must be an tuple with len positive
-    self.__coveragearea = (new_coverage_area_)
+    assert type(coverage_area_) == tuple and ( len(coverage_area_) >= 0 ) # New Coverage area must be an tuple with len positive
+    self.__coveragearea = (coverage_area_)
 
 
   # Get power
@@ -54,7 +54,7 @@ class PointAcess: # Point Acess
     
     assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
     self.__position = position_
-    self.__coveragearea[position_[0]:position_[0] + 10, position_[1]:position_[1]+10] = 1
+    self.__coveragearea[self.__position[0]:self.__position[0] + 10, self.__position[1]:self.__position[1]+10] = 1
     return self.__position
 
 
