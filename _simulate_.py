@@ -173,25 +173,25 @@ class Simulation: # Simulation
         
         height, width = ap.coverage_area
 
-        if (height > max_height) and (width > max_width):
+        if (height >= max_height) and (width >= max_width):
             max_height = height
             max_width = width
         
-        while True:
+    while True:
+      
+      ap = np.random.choice(aps)
           
-          ap = np.random.choice(aps)
-          
-          pos__ue = ((np.random.uniform(ap.position_ap[0] - min(max_height, max_width), ap.position_ap[0] + min(max_height, max_width)), np.random.uniform(ap.position_ap[1] - min(max_height, max_width), ap.position_ap[1] + min(max_height, max_width))))
-          
-          if (self.__coords.__contains__(pos__ue) == False) and (((pos__ue[0] - ap.position_ap[0]) ** 2 + (pos__ue[1] - ap.position_ap[1]) ** 2) <= (min(max_height, max_width) ** 2)):
-            
-            distance_ue_ap = sqrt( ( ( ( pos__ue[0]- ap.position_ap[0] ) ** 2 ) ) + ( ( ( pos__ue[1] - ap.position_ap[1] ) ** 2 ) ) ) # Distance UE-AP
+      pos__ue = ((np.random.uniform(ap.position_ap[0] - min(max_height, max_width), ap.position_ap[0] + min(max_height, max_width)), np.random.uniform(ap.position_ap[1] - min(max_height, max_width), ap.position_ap[1] + min(max_height, max_width))))
+      
+      if (self.__coords.__contains__(pos__ue) == False) and (((pos__ue[0] - ap.position_ap[0]) ** 2 + (pos__ue[1] - ap.position_ap[1]) ** 2) <= (min(max_height, max_width) ** 2)):
+        
+        distance_ue_ap = sqrt( ( ( ( pos__ue[0]- ap.position_ap[0] ) ** 2 ) ) + ( ( ( pos__ue[1] - ap.position_ap[1] ) ** 2 ) ) ) # Distance UE-AP
 
-            if distance_ue_ap >= self.do:  # Distance must be bigger or equal than the fixed reference distance ( 1 meter )
-              
-              ue.position_ue = pos__ue
-              self.__coords.append(pos__ue)
-              break
+        if distance_ue_ap >= self.do:  # Distance must be bigger or equal than the fixed reference distance ( 1 meter )
+          
+          ue.position_ue = pos__ue
+          self.__coords.append(pos__ue)
+          break
 
 
   def distance_ue_ap_(self, ap: PointAcess, ue: UserEquipments): # Calcule distance UE-AP
