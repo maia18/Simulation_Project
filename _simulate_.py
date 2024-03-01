@@ -302,14 +302,12 @@ if __name__ == "__main__":
           all_.append([powers, snrs, sirs, sinrs, capacities]) # Collect all results
 
   fig, axs = plt.subplots(2, 3, figsize=(18, 10)) # Graphic
-  # axs[0, 0].grid(True)  # For the top-left subplot
-  # axs[1, 1].grid(True)  # For the bottom-right subplot
 
   for ap in system.aps:
 
     height, width = ap.coverage_area
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
-    cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0)
+    cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.2)
     axs[0, 0].add_patch(cove_area)
     axs[0, 0].set_xlim(-1000, 1000)
     axs[0, 0].set_ylim(-1000, 1000)
@@ -328,5 +326,5 @@ if __name__ == "__main__":
       axs[row, col].plot(filtered_result, cumulative_prob, label=f"CDF - {label}")
       axs[row, col].set_title(f"CDF - {label}")
       axs[row, col].grid(True)
-
+  
   plt.show()
