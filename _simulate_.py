@@ -170,9 +170,9 @@ class Simulation: # Simulation
           break
 
 
-  def UE_position(self, ue: UserEquipments, ap:PointAcess, pos__ue=(0,0)): # Position UE
+  def UE_position(self, ue: UserEquipments, ap: PointAcess, pos__ue=(0,0)): # Position UE
     
-    radius = PointAcess.radius_calc(ap.coverage_area) # Radius of the coverage area 
+    radius = ap.radius_calc(ap.coverage_area) # Radius of the coverage area
 
     if isinstance(ue, UserEquipments) and isinstance(ap, PointAcess) and isinstance(pos__ue, tuple) and len(pos__ue) >= 0:
         
