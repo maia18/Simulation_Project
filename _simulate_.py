@@ -13,15 +13,6 @@ class PointAcess: # Point Acess
     self.__coveragearea = (coverage_area)
     self.__power = power_
 
-  @classmethod
-  def radius_calc(self, coverage_area:tuple):
-    
-    assert type(coverage_area) == tuple and ( len(coverage_area) >= 0 ) # Coverage area must be an tuple with len positive
-    height, width = coverage_area
-    radius = min(height, width) // 2
-    return radius
-
-
   # Get coverage area
   @property
   def coverage_area(self):
@@ -171,16 +162,16 @@ class Simulation: # Simulation
 
 
   def UE_position(self, ue: UserEquipments, ap: PointAcess, pos__ue=(0,0)): # Position UE
-    
-    radius = ap.radius_calc(ap.coverage_area) # Radius of the coverage area
+  
+    height, width = ap.coverage_area
 
     if isinstance(ue, UserEquipments) and isinstance(ap, PointAcess) and isinstance(pos__ue, tuple) and len(pos__ue) >= 0:
         
         while True:
           
-          pos__ue = ((np.random.uniform(ap.position_ap[0] - radius, ap.position_ap[0] + radius), np.random.uniform(ap.position_ap[1] - radius, ap.position_ap[1] + radius)))
+          pos__ue = ((np.random.uniform(ap.position_ap[0] - min(height, width), ap.position_ap[0] + min(height, width)), np.random.uniform(ap.position_ap[1] - min(height, width), ap.position_ap[1] + min(height, width))))
           
-          if (self.__coords.__contains__(pos__ue) == False) and (((pos__ue[0] - ap.position_ap[0]) ** 2 + (pos__ue[1] - ap.position_ap[1]) ** 2) <= (radius ** 2)):
+          if (self.__coords.__contains__(pos__ue) == False) and (((pos__ue[0] - ap.position_ap[0]) ** 2 + (pos__ue[1] - ap.position_ap[1]) ** 2) <= (min(height, width) ** 2)):
             
             distance_ue_ap = sqrt( ( ( ( pos__ue[0]- ap.position_ap[0] ) ** 2 ) ) + ( ( ( pos__ue[1] - ap.position_ap[1] ) ** 2 ) ) ) # Distance UE-AP
 
@@ -223,7 +214,7 @@ if __name__ == "__main__":
   simulate = Simulation(system)
   simulate.AP_position(AP, (0,0))
 
-  num_ue = 100 # Amount of UEs
+  num_ue = 4 # Amount of UEs
   ues_ = [UserEquipments() for _ in range(num_ue)]
 
   for ue in ues_:
@@ -238,9 +229,9 @@ if __name__ == "__main__":
     
     print(f"Position UE {i+1} : {ue.position_ue}") # Position UE
     print(f"UE {i+1} Channel: {ue.get_channel()}") # Channel UE 
-    print(f"Distance AP-UE {i+1} : {simulate.distance_ue_ap_(AP, ue)}m") # Distance AP-UE
+    print(f"Distance UE{i+1}-AP  : {simulate.distance_ue_ap_(AP, ue)}m") # Distance AP-UE
       
-    for j, ues in enumerate(ues_): 
+    for j, ues in enumerate(ues_):
       
       if ( ( ues.get_channel() == ue.get_channel() ) and ( ues != ue ) ):
         
@@ -275,8 +266,9 @@ if __name__ == "__main__":
 
   for ap in system.aps:
 
+    height, width = ap.coverage_area
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
-    cove_area = plt.Circle(ap.position_ap, radius = ap.radius_calc(ap.coverage_area), alpha=0.25)
+    cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.25)
     axs[0, 0].add_patch(cove_area) ; axs[0, 0].set_xlim(-ap.coverage_area[0], ap.coverage_area[0]) ; axs[0, 0].set_ylim(-ap.coverage_area[1], ap.coverage_area[1]) ; axs[0,0].set_title("Simulate")
 
     for ue in system.ues:
