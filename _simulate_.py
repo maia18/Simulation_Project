@@ -153,7 +153,7 @@ class Simulation: # Simulation
 
         while True:
                     
-          pos__ap = ((np.random.randint(0, len(aps.coverage_area)), np.random.randint(0, len(aps.coverage_area))))
+          pos__ap = ((np.random.randint(-1000, 1000), np.random.randint(-1000, 1000)))
 
           if self.__coords.__contains__(pos__ap) == False:
                 
@@ -164,17 +164,26 @@ class Simulation: # Simulation
 
   def UE_position(self, ue: UserEquipments, aps: list[PointAcess], pos__ue=(0,0)): # Position UE
 
-    height, width = aps[0].coverage_area
+    assert isinstance(ue, UserEquipments) # ue must be an instance of the UserEquipments
+    assert isinstance(aps, list) # aps must be an list of the PointAcess
 
-    if isinstance(ue, UserEquipments) and isinstance(pos__ue, tuple) and len(pos__ue) >= 0:
+    max_height, max_width = 0, 0
+
+    for ap in aps:
+        
+        height, width = ap.coverage_area
+
+        if (height > max_height) and (width > max_width):
+            max_height = height
+            max_width = width
         
         while True:
           
           ap = np.random.choice(aps)
           
-          pos__ue = ((np.random.uniform(ap.position_ap[0] - min(height, width), ap.position_ap[0] + min(height, width)), np.random.uniform(ap.position_ap[1] - min(height, width), ap.position_ap[1] + min(height, width))))
+          pos__ue = ((np.random.uniform(ap.position_ap[0] - min(max_height, max_width), ap.position_ap[0] + min(max_height, max_width)), np.random.uniform(ap.position_ap[1] - min(max_height, max_width), ap.position_ap[1] + min(max_height, max_width))))
           
-          if (self.__coords.__contains__(pos__ue) == False) and (((pos__ue[0] - ap.position_ap[0]) ** 2 + (pos__ue[1] - ap.position_ap[1]) ** 2) <= (min(height, width) ** 2)):
+          if (self.__coords.__contains__(pos__ue) == False) and (((pos__ue[0] - ap.position_ap[0]) ** 2 + (pos__ue[1] - ap.position_ap[1]) ** 2) <= (min(max_height, max_width) ** 2)):
             
             distance_ue_ap = sqrt( ( ( ( pos__ue[0]- ap.position_ap[0] ) ** 2 ) ) + ( ( ( pos__ue[1] - ap.position_ap[1] ) ** 2 ) ) ) # Distance UE-AP
 
@@ -220,14 +229,9 @@ if __name__ == "__main__":
 
   system = System()
   system.aps = aps
-  # system.aps = AP2
-  # system.aps = AP3
-  # system.aps = AP4
-
-  aps = system.aps
 
   simulate = Simulation(system)
-  simulate.AP_position(aps)
+  simulate.AP_position(system.aps)
 
   noise_power = ( ( simulate.ko ) * ( simulate.bt / len( AP.channel ) ) if len( AP.channel ) >= 0 else None ) # Noise power
   print(f'Noise Power: {noise_power}W \n')
@@ -241,7 +245,7 @@ if __name__ == "__main__":
     
   for i in range(num_ue):
     
-    simulate.UE_position(ues_[i], aps)
+    simulate.UE_position(ues_[i], system.aps)
 
   for i, ue in enumerate(ues_):
     
@@ -285,7 +289,7 @@ if __name__ == "__main__":
 
     height, width = ap.coverage_area
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
-    cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.25)
+    cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0)
     axs[0, 0].add_patch(cove_area) ; axs[0, 0].set_xlim(-1000, 1000) ; axs[0, 0].set_ylim(-1000, 1000) ; axs[0,0].set_title("Simulate")
 
     for ue in system.ues:
