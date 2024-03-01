@@ -247,7 +247,7 @@ if __name__ == "__main__":
         distance_ues = sqrt( ( ( ( ues.position_ue[0] - ue.position_ue[0] ) ** (2) ) + ( ( ues.position_ue[1] - ue.position_ue[1] ) ** (2) ) ) ) # Distance UE-Others_UEs
         print(f"\nDistance between UE {i+1} and UE {j+1} : {distance_ues}m")
         interference_ = 0
-        interference_ += ( AP.power *  ( ( distance_ues / ( simulate.do ) ** ( simulate.n ) ) ) ) # interference totally
+        interference_ += ( ue.power *  ( ( distance_ues / ( simulate.do ) ** ( simulate.n ) ) ) ) # interference totally
         print(f"Interference between UE {i+1} and UE {j+1} : {interference_}\n")
       
         if ( interference_ >= 0 ):
