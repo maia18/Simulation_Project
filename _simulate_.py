@@ -214,7 +214,7 @@ if __name__ == "__main__":
   simulate = Simulation(system)
   simulate.AP_position(AP, (0,0))
 
-  num_ue = 4 # Amount of UEs
+  num_ue = 120 # Amount of UEs
   ues_ = [UserEquipments() for _ in range(num_ue)]
 
   for ue in ues_:
@@ -231,36 +231,36 @@ if __name__ == "__main__":
     print(f"UE {i+1} Channel: {ue.get_channel()}") # Channel UE 
     print(f"Distance UE{i+1}-AP  : {simulate.distance_ue_ap_(AP, ue)}m") # Distance AP-UE
       
+    power = ( ue.power * ( simulate.k / ( simulate.distance_ue_ap_(AP, ue) ** ( simulate.n ) ) ) ) # Power in Watts
+    noise_power = ( ( simulate.ko ) * ( simulate.bt / len( AP.channel ) ) if len( AP.channel ) >= 0 else None ) # Noise power
+    
+    print(f"Power UE{i+1}: {power}W") ; powers.append(power)
+        
     for j, ues in enumerate(ues_):
       
+      interference_ = 0
+
       if ( ( ues.get_channel() == ue.get_channel() ) and ( ues != ue ) ):
         
         distance_ues = sqrt( ( ( ( ues.position_ue[0] - ue.position_ue[0] ) ** (2) ) + ( ( ues.position_ue[1] - ue.position_ue[1] ) ** (2) ) ) ) # Distance UE-Others_UEs
         print(f"\nDistance between UE {i+1} and UE {j+1} : {distance_ues}m")
-        interference_ = 0
         interference_ += ( ue.power *  ( ( distance_ues / ( simulate.do ) ** ( simulate.n ) ) ) ) # interference totally
         print(f"Interference between UE {i+1} and UE {j+1} : {interference_}\n")
       
         if ( interference_ >= 0 ):
           
-          power = ( ue.power * ( simulate.k / ( simulate.distance_ue_ap_(AP, ue) ** ( simulate.n ) ) ) ) # Power in Watts
-          noise_power = ( ( simulate.ko ) * ( simulate.bt / len( AP.channel ) ) if len( AP.channel ) >= 0 else None ) # Noise power
-
-          if ( power > 0 ) and ( noise_power > 0 ):
+          snr = ( 10 ) * log10( ( ( power / noise_power ) ) ) # SNR
+          sir = ( 10 ) * log10( ( power / interference_ ) ) # SIR
+          sinr = ( 10 ) * log10( ( power / ( interference_ + noise_power ) ) ) # SINR
+          capacity = ( simulate.bt / len(AP.channel) ) * ( log2(1 + ( 10**(sinr/10) ) ) ) # Capacity
             
-            snr = ( 10 ) * log10( ( ( power / noise_power ) ) ) # SNR
-            sir = ( 10 ) * log10( ( power / interference_ ) ) # SIR
-            sinr = ( 10 ) * log10( ( power / ( interference_ + noise_power ) ) ) # SINR
-            capacity = ( simulate.bt / len(AP.channel) ) * ( log2(1 + ( 10**(sinr/10) ) ) ) # Capacity
-              
-            print(f"Power: {power}W") ; powers.append(power)
-            print(f"Signal-to-noise ratio(SNR): {snr}db") ; snrs.append(snr)
-            print(f"Signal-to-interference ratio(SIR): {sir}db") ; sirs.append(sir)
-            print(f"Signal-to-interference-Noise ratio(SINR): {sinr}db") ; sinrs.append(sinr)
-            print(f"Capacity: {capacity}") ; capacities.append(capacity) ; print("- "*80)
+          print(f"Signal-to-noise ratio(SNR): {snr}db") ; snrs.append(snr)
+          print(f"Signal-to-interference ratio(SIR): {sir}db") ; sirs.append(sir)
+          print(f"Signal-to-interference-Noise ratio(SINR): {sinr}db") ; sinrs.append(sinr)
+          print(f"Capacity: {capacity}") ; capacities.append(capacity) ; print("- "*80)
 
-            all_ = []
-            all_.append([powers, snrs, sirs, sinrs, capacities]) # Collect all results
+          all_ = []
+          all_.append([powers, snrs, sirs, sinrs, capacities]) # Collect all results
 
   fig, axs = plt.subplots(2, 3, figsize=(18, 10)) # Graphic
 
