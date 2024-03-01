@@ -313,8 +313,8 @@ if __name__ == "__main__":
     axs[0, 0].add_patch(cove_area)
     axs[0, 0].set_xlim(-1000, 1000)
     axs[0, 0].set_ylim(-1000, 1000)
-    axs[0, 0].grid(True)
     axs[0, 0].set_title("Simulate")
+    axs[0, 0].grid(True)
 
     for ue in system.ues:
 
