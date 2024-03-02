@@ -146,20 +146,20 @@ class Simulation: # Simulation
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
       
-  def add_aps(self, num_aps: int, coverage_area: tuple, power: int, min_distance: float):
+  def add_aps(self, num_aps: int, coverage_area: tuple, power: int):
 
     assert num_aps > 0
-    assert min_distance > 0
 
     for _ in range(num_aps):
       
       while True:
         
         pos_ap = (np.random.randint(0, 1000), np.random.randint(0, 1000))
+        min_distance = pos_ap[0]//num_aps, pos_ap[1]//num_aps
             
         if (self.__coords.__contains__(pos_ap) == False):
 
-          min_distance_satisfied = all(sqrt((pos_ap[0] - ap.position_ap[0]) ** 2 + (pos_ap[1] - ap.position_ap[1]) ** 2) >= min_distance for ap in self.system.aps)
+          min_distance_satisfied = all(sqrt((pos_ap[0] - ap.position_ap[0]) ** 2 + (pos_ap[1] - ap.position_ap[1]) ** 2) >= len(min_distance) for ap in self.system.aps)
 
           if min_distance_satisfied:
             ap = PointAcess(coverage_area, power)
@@ -230,7 +230,7 @@ if __name__ == "__main__":
   system = System()
   simulate = Simulation(system)
 
-  simulate.add_aps(10, (100, 100), 10, 310)
+  simulate.add_aps(10, (100, 100), 10)
 
   for i, ap in enumerate(system.aps):
       print(f"AP {i+1} - Position: {ap.position_ap}")
