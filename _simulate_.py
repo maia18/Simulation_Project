@@ -145,66 +145,14 @@ class Simulation: # Simulation
     self.do = 1 # fixed reference distance ( 1 meter )
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
-      
-  # def add_aps(self, num_aps: int, coverage_area: tuple, power: int):
-
-  #   assert num_aps > 0
-
-  #   for _ in range(num_aps):
-        
-  #     while True:
-        
-  #       pos_ap = (np.random.randint(0, 1000), np.random.randint(0, 1000))
-  #       min_distance = pos_ap[0]//num_aps, pos_ap[1]//num_aps
-            
-  #       if (self.__coords.__contains__(pos_ap) == False):
-
-  #         min_distance_satisfied = all(sqrt((pos_ap[0] - ap.position_ap[0]) ** 2 + (pos_ap[1] - ap.position_ap[1]) ** 2) >= len(min_distance) for ap in self.system.aps)
-
-  #         if min_distance_satisfied:
-  #           ap = PointAcess(coverage_area, power)
-  #           ap.position_ap = pos_ap
-  #           self.system.aps.append(ap)
-  #           self.__coords.append(pos_ap)
-  #           break
-    
-  # def add_aps(self, num_aps: int, coverage_area: tuple, power: int, grid_spacing: int):
-  #   assert num_aps > 0
-
-  #   # Calculate grid dimensions based on coverage area and number of APs
-  #   grid_width, grid_height = coverage_area[0] // grid_spacing, coverage_area[1] // grid_spacing
-  #   coverage_radius = power**0.5  # Assuming power relates to coverage radius
-
-  #   for i in range(num_aps):
-  #       # Calculate x and y coordinates based on grid position
-  #       x_pos = (i % grid_width) * grid_spacing
-  #       y_pos = int(i / grid_width) * grid_spacing
-  #       pos_ap = (x_pos, y_pos)
-
-  #       min_distance_satisfied = True
-  #       for ap in self.system.aps:
-  #           distance = ((pos_ap[0] - ap.position_ap[0])**2 + (pos_ap[1] - ap.position_ap[1])**2)**0.5
-  #           if distance < 2 * coverage_radius:  # Check for minimum separation (considering radii)
-  #               min_distance_satisfied = False
-  #               break
-
-  #       if min_distance_satisfied:
-  #           ap = PointAcess(coverage_area, power)
-  #           ap.position_ap = pos_ap
-  #           self.system.aps.append(ap)
-  #           self.__coords.append(pos_ap)
-
-  # # ... (rest of your code)
     
   def add_aps(self, num_aps: int, coverage_area: tuple, power: int):
+
     assert num_aps > 0
 
-    # Define grid properties based on image analysis
-    num_rows = 6
     num_cols = 6
     grid_spacing = 200
 
-    # Iterate over grid coordinates and generate positions based on image layout
     for i in range(num_aps):
         row = i // num_cols
         col = i % num_cols
