@@ -146,21 +146,6 @@ class Simulation: # Simulation
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
       
-  # def AP_position(self, ap: list[PointAcess]): # Position AP
-      
-  #     assert isinstance(ap, list) # ap must be an instance of the PointAcess
-
-  #     for aps in ap:
-
-  #       while True:
-                    
-
-  #         if self.__coords.__contains__(pos__ap) == False:
-                
-  #           aps.position_ap = pos__ap
-  #           self.__coords.append(pos__ap)
-  #           break  
-    
   def add_aps(self, num_aps: int, coverage_area: tuple, power: int, min_distance: float):
 
     assert num_aps > 0
@@ -181,7 +166,6 @@ class Simulation: # Simulation
                     self.system.aps.append(ap)
                     self.__coords.append(pos_ap)
                     break
-
 
 
   def UE_position(self, ue: UserEquipments, aps: list[PointAcess], pos__ue=(0,0)): # Position UE
