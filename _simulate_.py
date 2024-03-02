@@ -138,36 +138,33 @@ class Simulation: # Simulation
 
     assert isinstance(system, System)  # system must be an instance of the class System
     self.system = system
-    self.__coords = []  # Coordinates ocupeds
+    self.__coords = list()  # Coordinates ocupeds
 
     self.bt = (10**(8)) # Total available bandwidth ( 100MHz = 10^(8)Hz )
     self.ko = (10**(-20)) # Constant for the noise power ( 10^(-17)miliwatts/Hz = 10^(-20)watts/Hz )
     self.do = 1 # fixed reference distance ( 1 meter )
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
-    
-  def add_aps(self, num_aps: int, coverage_area: tuple, power: int):
+  
+  def AP_position(self, num_aps: int, coverage_area: tuple, power: int): # Position APs
 
-    assert num_aps > 0
-
-    num_cols = 6
-    grid_spacing = 200
+    assert num_aps > 0 # Amount of APs must be bigger than zero
+    n = [0, 200, 400, 600, 800, 1000]
 
     for i in range(num_aps):
-        row = i // num_cols
-        col = i % num_cols
-        x_pos = col * grid_spacing
-        y_pos = row * grid_spacing
-
-        pos_ap = (x_pos, y_pos)
-
-        if self.__coords.__contains__(pos_ap) == False:
-
-          ap = PointAcess(coverage_area, power)
-          ap.position_ap = pos_ap
-          self.system.aps.append(ap)
-          self.__coords.append(pos_ap)
-
+      
+      x = i // 6 * np.random.choice(n)
+      y = i % 6 * np.random.choice(n)
+        
+      if 0 <= x <= 1000 and 0 <= y <= 1000 and self.__coords.__contains__((x, y)) == False:
+        
+        pos_ap = (x, y)
+    
+        ap = PointAcess(coverage_area, power)
+        self.system.aps.append(ap)
+        self.__coords.append(pos_ap)
+        ap.position_ap = pos_ap
+    
 
   def UE_position(self, ue: UserEquipments, aps: list[PointAcess]): # Position UE
 
@@ -230,10 +227,10 @@ if __name__ == "__main__":
   system = System()
   simulate = Simulation(system)
 
-  simulate.add_aps(36, (50, 50), 10)
+  simulate.AP_position(10, (100, 100), 10)
 
   for i, ap in enumerate(system.aps):
-      print(f"AP {i+1} - Position: {ap.position_ap}")
+    print(f"AP {i+1} - Position: {ap.position_ap}")
 
   noise_power = ( ( simulate.ko ) * ( simulate.bt / len( ap.channel ) ) if len( ap.channel ) >= 0 else None ) # Noise power
   print(f'Noise Power: {noise_power}W \n')
@@ -253,43 +250,46 @@ if __name__ == "__main__":
     
     print(f"Position UE {i+1} : {ue.position_ue}") # Position UE
     print(f"UE {i+1} Channel: {ue.get_channel()}") # Channel UE 
-    print(f"Distance UE{i+1}-AP  : {simulate.distance_ue_ap_(ap, ue)}m") # Distance AP-UE
-      
-    power = ( ue.power * ( simulate.k / ( simulate.distance_ue_ap_(ap, ue) ** ( simulate.n ) ) ) ) # Power in Watts
-    
-    print(f"Power UE{i+1}: {power}W") ; powers.append(power)
-        
-    for j, ues in enumerate(ues_):
-      
-      interference_ = 0
 
-      if ( ( ues.get_channel() == ue.get_channel() ) and ( ues != ue ) ):
-        
-        distance_ues_ap = sqrt( ( ( ( ues.position_ue[0] - ap.position_ap[0] ) ** (2) ) + ( ( ues.position_ue[1] - ap.position_ap[1] ) ** (2) ) ) ) # Distance Others_UEs-AP
-        print(f"\nDistance between UE {j+1} and AP: {distance_ues_ap}m")
-        interference_ += ( ues.power *  ( ( distance_ues_ap / ( simulate.do ) ** ( simulate.n ) ) ) ) # interference totally
-        print(f"Interference between UE {j+1} and AP: {interference_}\n")
+    for ap in system.aps:
+
+      print(f"Distance UE{i+1}-AP  : {simulate.distance_ue_ap_(ap, ue)}m") # Distance AP-UE
       
-        if interference_ >= 0:
+      power = ( ue.power * ( simulate.k / ( simulate.distance_ue_ap_(ap, ue) ** ( simulate.n ) ) ) ) # Power in Watts
+      
+      print(f"Power UE{i+1}: {power}W") ; powers.append(power)
           
-          snr = ( 10 ) * log10( ( ( power / noise_power ) ) ) # SNR
-          sir = ( 10 ) * log10( ( power / interference_ ) ) # SIR
-          sinr = ( 10 ) * log10( ( power / ( interference_ + noise_power ) ) ) # SINR
-          capacity = ( simulate.bt / len(ap.channel) ) * ( log2(1 + ( 10**(sinr/10) ) ) ) # Capacity
-            
-          print(f"Signal-to-noise ratio(SNR): {snr}db") ; snrs.append(snr)
-          print(f"Signal-to-interference ratio(SIR): {sir}db") ; sirs.append(sir)
-          print(f"Signal-to-interference-Noise ratio(SINR): {sinr}db") ; sinrs.append(sinr)
-          print(f"Capacity: {capacity}") ; capacities.append(capacity) ; print("- "*80)
+      for j, ues in enumerate(ues_):
+        
+        interference_ = 0
 
-          all_ = []
-          all_.append([powers, snrs, sirs, sinrs, capacities]) # Collect all results
+        if ( ( ues.get_channel() == ue.get_channel() ) and ( ues != ue ) ):
+          
+          distance_ues_ap = sqrt( ( ( ( ues.position_ue[0] - ap.position_ap[0] ) ** (2) ) + ( ( ues.position_ue[1] - ap.position_ap[1] ) ** (2) ) ) ) # Distance Others_UEs-AP
+          print(f"\nDistance between UE {j+1} and AP: {distance_ues_ap}m")
+          interference_ += ( ues.power *  ( ( distance_ues_ap / ( simulate.do ) ** ( simulate.n ) ) ) ) # interference totally
+          print(f"Interference between UE {j+1} and AP: {interference_}\n")
+        
+          if interference_ >= 0:
+            
+            snr = ( 10 ) * log10( ( ( power / noise_power ) ) ) # SNR
+            sir = ( 10 ) * log10( ( power / interference_ ) ) # SIR
+            sinr = ( 10 ) * log10( ( power / ( interference_ + noise_power ) ) ) # SINR
+            capacity = ( simulate.bt / len(ap.channel) ) * ( log2(1 + ( 10**(sinr/10) ) ) ) # Capacity
+              
+            print(f"Signal-to-noise ratio(SNR): {snr}db") ; snrs.append(snr)
+            print(f"Signal-to-interference ratio(SIR): {sir}db") ; sirs.append(sir)
+            print(f"Signal-to-interference-Noise ratio(SINR): {sinr}db") ; sinrs.append(sinr)
+            print(f"Capacity: {capacity}") ; capacities.append(capacity) ; print("- "*80)
+
+            all_ = []
+            all_.append([powers, snrs, sirs, sinrs, capacities]) # Collect all results
 
   fig, axs = plt.subplots(2, 3, figsize=(18, 10)) # Graphic
 
   for ap in system.aps:
 
-    height, width = ap.coverage_area
+    height, width = ap.coverage_area  
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
     cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.2)
     axs[0, 0].add_patch(cove_area)
