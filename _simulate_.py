@@ -158,6 +158,7 @@ class Simulation: # Simulation
         pos_ap = (np.random.randint(0, 1000), np.random.randint(0, 1000))
             
         if (self.__coords.__contains__(pos_ap) == False):
+
           min_distance_satisfied = all(sqrt((pos_ap[0] - ap.position_ap[0]) ** 2 + (pos_ap[1] - ap.position_ap[1]) ** 2) >= min_distance for ap in self.system.aps)
 
           if min_distance_satisfied:
