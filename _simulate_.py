@@ -297,7 +297,7 @@ if __name__ == "__main__":
     min_y_ap = min(ap.position_ap[1] for ap in system.aps)
     max_y_ap = max(ap.position_ap[1] for ap in system.aps)
 
-    triangle = Polygon(points, closed=True, edgecolor='yellow', facecolor='yellow')
+    triangle = Polygon(points, closed=True, edgecolor='none', facecolor='yellow')
     cove_area = plt.Circle(ap.position_ap, radius = min(ap.coverage_area), alpha=0.2)
     axs[0, 0].add_patch(triangle)
     axs[0, 0].add_patch(cove_area)
