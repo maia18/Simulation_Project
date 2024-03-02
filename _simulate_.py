@@ -1,5 +1,5 @@
 # Simulation Monte Carlo - Cellular Wireless Communication Systems
-import numpy as np ; import matplotlib.pyplot as plt ; from math import sqrt,log10,log2
+import numpy as np ; import matplotlib.pyplot as plt ; from math import sqrt,log10,log2; from matplotlib.patches import Polygon
 
 class PointAcess: # Point Acess
 
@@ -290,14 +290,16 @@ if __name__ == "__main__":
 
   for ap in system.aps:
 
+    points = [(ap.position_ap[0],ap.position_ap[1] + 20), (ap.position_ap[0] - 20, ap.position_ap[1] - 20), (ap.position_ap[0] + 20, ap.position_ap[1] - 20)]
+
     min_x_ap = min(ap.position_ap[0] for ap in system.aps)
     max_x_ap = max(ap.position_ap[0] for ap in system.aps)
     min_y_ap = min(ap.position_ap[1] for ap in system.aps)
     max_y_ap = max(ap.position_ap[1] for ap in system.aps)
 
-    height, width = ap.coverage_area
-    axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
-    cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.18) 
+    triangle = Polygon(points, closed=True, edgecolor='yellow', facecolor='yellow')
+    cove_area = plt.Circle(ap.position_ap, radius = min(ap.coverage_area), alpha=0.2)
+    axs[0, 0].add_patch(triangle)
     axs[0, 0].add_patch(cove_area)
     axs[0, 0].grid(True)
     axs[0, 0].set_title("Simulate")
