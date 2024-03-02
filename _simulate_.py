@@ -151,7 +151,7 @@ class Simulation: # Simulation
     assert num_aps > 0
 
     for _ in range(num_aps):
-      
+        
       while True:
         
         pos_ap = (np.random.randint(0, 1000), np.random.randint(0, 1000))
@@ -167,6 +167,22 @@ class Simulation: # Simulation
             self.system.aps.append(ap)
             self.__coords.append(pos_ap)
             break
+
+
+  # def AP_position(self, aps_:list[PointAcess]):
+
+  #   for ap in aps_:
+
+  #     while True:
+      
+  #       pos_ap = (np.random.randint(0, 1000), np.random.randint(0, 1000))
+
+  #       if self.__coords.__contains__(pos_ap) == False:
+
+  #         ap.position_ap = pos_ap
+  #         self.__coords.append(pos_ap)
+  #         break
+
 
 
   def UE_position(self, ue: UserEquipments, aps: list[PointAcess]): # Position UE
@@ -230,7 +246,7 @@ if __name__ == "__main__":
   system = System()
   simulate = Simulation(system)
 
-  simulate.add_aps(10, (100, 100), 10)
+  simulate.add_aps(10, (200, 200), 10)
 
   for i, ap in enumerate(system.aps):
       print(f"AP {i+1} - Position: {ap.position_ap}")
