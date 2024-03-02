@@ -152,20 +152,20 @@ class Simulation: # Simulation
     assert min_distance > 0
 
     for _ in range(num_aps):
+      
+      while True:
         
-        while True:
+        pos_ap = (np.random.randint(-1000, 1000), np.random.randint(-1000, 1000))
             
-            pos_ap = (np.random.randint(-1000, 1000), np.random.randint(-1000, 1000))
-            
-            if  (self.__coords.__contains__(pos_ap) == False):
-                min_distance_satisfied = all(sqrt((pos_ap[0] - ap.position_ap[0]) ** 2 + (pos_ap[1] - ap.position_ap[1]) ** 2) >= min_distance for ap in self.system.aps)
+        if (self.__coords.__contains__(pos_ap) == False):
+          min_distance_satisfied = all(sqrt((pos_ap[0] - ap.position_ap[0]) ** 2 + (pos_ap[1] - ap.position_ap[1]) ** 2) >= min_distance for ap in self.system.aps)
 
-                if min_distance_satisfied:
-                    ap = PointAcess(coverage_area, power)
-                    ap.position_ap = pos_ap
-                    self.system.aps.append(ap)
-                    self.__coords.append(pos_ap)
-                    break
+          if min_distance_satisfied:
+            ap = PointAcess(coverage_area, power)
+            ap.position_ap = pos_ap
+            self.system.aps.append(ap)
+            self.__coords.append(pos_ap)
+            break
 
 
   def UE_position(self, ue: UserEquipments, aps: list[PointAcess], pos__ue=(0,0)): # Position UE
