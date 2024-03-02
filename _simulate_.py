@@ -53,7 +53,7 @@ class PointAcess: # Point Acess
         return self.__position
     
     else:
-        raise AssertionError("Posição fora da área de cobertura")
+        raise AssertionError("Position out of the coverage area...")
 
 
 
