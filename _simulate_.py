@@ -116,30 +116,6 @@ class System: # System
     self.__aps.extend(aps_)
 
 
-  def add_aps(self, num_aps: int, coverage_area: tuple, power: int, min_distance: float):
-      assert num_aps > 0
-      assert min_distance > 0
-
-      aps = []
-      for _ in range(num_aps):
-          ap = PointAcess(coverage_area, power)
-          self._set_ap_position(aps, ap, min_distance)
-          aps.append(ap)
-
-      self.__aps.extend(aps)
-
-  def _set_ap_position(self, existing_aps, new_ap, min_distance):
-      
-      while True:
-          pos__ap = ((np.random.randint(-1000, 1000), np.random.randint(-1000, 1000)))
-
-          min_distance_satisfied = all(sqrt((pos__ap[0] - ap.position_ap[0]) ** 2 + (pos__ap[1] - ap.position_ap[1]) ** 2) >= min_distance for ap in existing_aps)
-
-          if min_distance_satisfied:
-              new_ap.position_ap = pos__ap
-              break
-
-
   # Get UE's
   @property
   def ues(self):
@@ -161,6 +137,7 @@ class Simulation: # Simulation
   def __init__(self, system:System):
 
     assert isinstance(system, System)  # system must be an instance of the class System
+    self.system = system
     self.__coords = []  # Coordinates ocupeds
 
     self.bt = (10**(8)) # Total available bandwidth ( 100MHz = 10^(8)Hz )
@@ -183,6 +160,28 @@ class Simulation: # Simulation
   #           aps.position_ap = pos__ap
   #           self.__coords.append(pos__ap)
   #           break  
+    
+  def add_aps(self, num_aps: int, coverage_area: tuple, power: int, min_distance: float):
+
+    assert num_aps > 0
+    assert min_distance > 0
+
+    for _ in range(num_aps):
+        
+        while True:
+            
+            pos_ap = (np.random.randint(-1000, 1000), np.random.randint(-1000, 1000))
+            
+            if  (self.__coords.__contains__(pos_ap) == False):
+                min_distance_satisfied = all(sqrt((pos_ap[0] - ap.position_ap[0]) ** 2 + (pos_ap[1] - ap.position_ap[1]) ** 2) >= min_distance for ap in self.system.aps)
+
+                if min_distance_satisfied:
+                    ap = PointAcess(coverage_area, power)
+                    ap.position_ap = pos_ap
+                    self.system.aps.append(ap)
+                    self.__coords.append(pos_ap)
+                    break
+
 
 
   def UE_position(self, ue: UserEquipments, aps: list[PointAcess], pos__ue=(0,0)): # Position UE
@@ -246,7 +245,7 @@ if __name__ == "__main__":
   system = System()
   simulate = Simulation(system)
 
-  system.add_aps(10, (200, 200), 10, 500)
+  simulate.add_aps(10, (200, 200), 10, 500)
 
   for i, ap in enumerate(system.aps):
       print(f"AP {i+1} - Position: {ap.position_ap}")
