@@ -286,21 +286,32 @@ if __name__ == "__main__":
             all_.append([powers, snrs, sirs, sinrs, capacities]) # Collect all results
 
   fig, axs = plt.subplots(2, 3, figsize=(18, 10)) # Graphic
+  padding = 100
 
   for ap in system.aps:
 
-    height, width = ap.coverage_area  
+    min_x_ap = min(ap.position_ap[0] for ap in system.aps)
+    max_x_ap = max(ap.position_ap[0] for ap in system.aps)
+    min_y_ap = min(ap.position_ap[1] for ap in system.aps)
+    max_y_ap = max(ap.position_ap[1] for ap in system.aps)
+
+    height, width = ap.coverage_area
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
-    cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.2)
+    cove_area = plt.Circle(ap.position_ap, radius = max(height, width), alpha=0.18) 
     axs[0, 0].add_patch(cove_area)
-    axs[0, 0].set_xlim(0, 1000)
-    axs[0, 0].set_ylim(0, 1000)
-    axs[0, 0].set_title("Simulate")
     axs[0, 0].grid(True)
+    axs[0, 0].set_title("Simulate")
 
     for ue in system.ues:
 
-        axs[0, 0].scatter(ue.position_ue[0], ue.position_ue[1], color='black', marker='.')
+      min_x_ue = min(min_x_ap, ue.position_ue[0])
+      max_x_ue = max(max_x_ap, ue.position_ue[0])
+      min_y_ue = min(min_y_ap, ue.position_ue[1])
+      max_y_ue = max(max_y_ap, ue.position_ue[1])
+
+      axs[0, 0].scatter(ue.position_ue[0], ue.position_ue[1], color='black', marker='.')
+      axs[0, 0].set_xlim(min_x_ue - padding, max_x_ue + padding)
+      axs[0, 0].set_ylim(min_y_ue - padding, max_y_ue + padding)
 
     for result, label, row, col in zip([powers, snrs, sirs, sinrs, capacities], ['Power', 'SNR', 'SIR', 'SINR', 'Capacity'], [0, 0, 1, 1, 1], [1, 2, 0, 1, 2]):
       
