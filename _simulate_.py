@@ -3,7 +3,7 @@ import numpy as np ; import matplotlib.pyplot as plt ; from math import sqrt,log
 
 class PointAcess: # Point Acess
 
-  channel = list(range(1,101)) # Channels
+  channel = list(range(1,6)) # Channels
 
   # class constructor
   def __init__(self, coverage_area:tuple, power_=0):
@@ -297,7 +297,7 @@ if __name__ == "__main__":
 
     height, width = ap.coverage_area
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
-    cove_area = plt.Circle(ap.position_ap, radius = max(height, width), alpha=0.18) 
+    cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.18) 
     axs[0, 0].add_patch(cove_area)
     axs[0, 0].grid(True)
     axs[0, 0].set_title("Simulate")
