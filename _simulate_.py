@@ -155,7 +155,7 @@ class Simulation: # Simulation
       
       while True:
         
-        pos_ap = (np.random.randint(-1000, 1000), np.random.randint(-1000, 1000))
+        pos_ap = (np.random.randint(0, 1000), np.random.randint(0, 1000))
             
         if (self.__coords.__contains__(pos_ap) == False):
           min_distance_satisfied = all(sqrt((pos_ap[0] - ap.position_ap[0]) ** 2 + (pos_ap[1] - ap.position_ap[1]) ** 2) >= min_distance for ap in self.system.aps)
@@ -229,7 +229,7 @@ if __name__ == "__main__":
   system = System()
   simulate = Simulation(system)
 
-  simulate.add_aps(10, (200, 200), 10, 500)
+  simulate.add_aps(10, (100, 100), 10, 310)
 
   for i, ap in enumerate(system.aps):
       print(f"AP {i+1} - Position: {ap.position_ap}")
@@ -292,8 +292,8 @@ if __name__ == "__main__":
     axs[0, 0].scatter(ap.position_ap[0], ap.position_ap[1], color='red', marker=',')
     cove_area = plt.Circle(ap.position_ap, radius = min(height, width), alpha=0.2)
     axs[0, 0].add_patch(cove_area)
-    axs[0, 0].set_xlim(-1000, 1000)
-    axs[0, 0].set_ylim(-1000, 1000)
+    axs[0, 0].set_xlim(0, 1000)
+    axs[0, 0].set_ylim(0, 1000)
     axs[0, 0].set_title("Simulate")
     axs[0, 0].grid(True)
 
