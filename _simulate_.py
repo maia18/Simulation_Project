@@ -246,7 +246,7 @@ if __name__ == "__main__":
   system = System()
   simulate = Simulation(system)
 
-  system.add_aps(5, (200, 200), 10, 500)
+  system.add_aps(10, (200, 200), 10, 500)
 
   for i, ap in enumerate(system.aps):
       print(f"AP {i+1} - Position: {ap.position_ap}")
@@ -254,7 +254,7 @@ if __name__ == "__main__":
   noise_power = ( ( simulate.ko ) * ( simulate.bt / len( ap.channel ) ) if len( ap.channel ) >= 0 else None ) # Noise power
   print(f'Noise Power: {noise_power}W \n')
 
-  num_ue = 10 # Amount of UEs
+  num_ue = 100 # Amount of UEs
   ues_ = [UserEquipments() for _ in range(num_ue)]
 
   for ue in ues_:
