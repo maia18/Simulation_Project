@@ -168,7 +168,7 @@ class Simulation: # Simulation
             break
 
 
-  def UE_position(self, ue: UserEquipments, aps: list[PointAcess], pos__ue=(0,0)): # Position UE
+  def UE_position(self, ue: UserEquipments, aps: list[PointAcess]): # Position UE
 
     assert isinstance(ue, UserEquipments) # ue must be an instance of the UserEquipments
     assert isinstance(aps, list) # aps must be an list of the PointAcess
