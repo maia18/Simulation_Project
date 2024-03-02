@@ -145,26 +145,26 @@ class Simulation: # Simulation
     self.do = 1 # fixed reference distance ( 1 meter )
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
-  
+    
   def AP_position(self, num_aps: int, coverage_area: tuple, power: int): # Position APs
 
     assert num_aps > 0 # Amount of APs must be bigger than zero
-    n = [0, 200, 400, 600, 800, 1000]
-
+    
     for i in range(num_aps):
       
-      x = i // 6 * np.random.choice(n)
-      y = i % 6 * np.random.choice(n)
-        
-      if 0 <= x <= 1000 and 0 <= y <= 1000 and self.__coords.__contains__((x, y)) == False:
-        
+      while True:
+        x = np.random.choice([0, 200, 400, 600, 800, 1000])
+        y = np.random.choice([0, 200, 400, 600, 800, 1000])
         pos_ap = (x, y)
-    
-        ap = PointAcess(coverage_area, power)
-        self.system.aps.append(ap)
-        self.__coords.append(pos_ap)
-        ap.position_ap = pos_ap
-    
+
+        if self.__coords.__contains__(pos_ap) == False:
+
+          ap = PointAcess(coverage_area, power)
+          self.system.aps.append(ap)
+          self.__coords.append(pos_ap)
+          ap.position_ap = pos_ap
+          break
+
 
   def UE_position(self, ue: UserEquipments, aps: list[PointAcess]): # Position UE
 
@@ -227,7 +227,7 @@ if __name__ == "__main__":
   system = System()
   simulate = Simulation(system)
 
-  simulate.AP_position(10, (100, 100), 10)
+  simulate.AP_position(36, (100, 100), 10)
 
   for i, ap in enumerate(system.aps):
     print(f"AP {i+1} - Position: {ap.position_ap}")
