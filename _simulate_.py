@@ -137,9 +137,9 @@ class Simulation: # Simulation
   # class constructor
   def __init__(self, system:System):
 
-    assert isinstance(system, System)  # system must be an instance of the class System
+    assert isinstance(system, System) # system must be an instance of the class System
     self.system = system
-    self.__coords = list()  # Coordinates ocupeds
+    self.__coords = list() # Coordinates ocupeds
 
     self.bt = (10**(8)) # Total available bandwidth ( 100MHz = 10^(8)Hz )
     self.ko = (10**(-20)) # Constant for the noise power ( 10^(-17)miliwatts/Hz = 10^(-20)watts/Hz )
@@ -149,61 +149,50 @@ class Simulation: # Simulation
 
   def AP_position(self, aps: list[PointAcess]):
     
-    assert len(aps) > 0 and isinstance(aps, list)  # Amount of APs must be bigger than zero
+    assert len(aps) > 0 and isinstance(aps, list) # Amount of APs must be bigger than zero
 
     ap_positions = list() # List of positions of the aps
     num_aps = len(aps)
     
     for i in range(num_aps):
-
-        x = ((i % int(sqrt(num_aps))) + 0.5) * 1000 / (int(sqrt(num_aps)))
-        y = ((i // int(sqrt(num_aps))) + 0.5) * 1000 / ceil(num_aps / int(sqrt(num_aps)))
-
-        aps[i].position_ap = (x, y)
-        ap_positions.append(aps[i].position_ap)
-
-    return ap_positions
-
-
-  def UE_position(self, ue: UserEquipments, aps: list[PointAcess]): # Position UE
-
-    assert isinstance(ue, UserEquipments) # ue must be an instance of the UserEquipments
-    assert isinstance(aps, list) # aps must be an list of the PointAcess
-
-    while True:
-
-      ap = np.random.choice(aps)
-
-      # pos__ue = ((np.random.uniform(ap.position_ap[0] - min(max_height, max_width), ap.position_ap[0] + min(max_height, max_width)), np.random.uniform(ap.position_ap[1] - min(max_height, max_width), ap.position_ap[1] + min(max_height, max_width))))
-      pos__ue = ((np.random.randint(0, 1000), np.random.randint(0, 1000)))
-      if (self.__coords.__contains__(pos__ue) == False) and (((pos__ue[0] - ap.position_ap[0]) ** 2 + (pos__ue[1] - ap.position_ap[1]) ** 2) <= (1000 ** 2)):
-
-        distance_ue_ap = sqrt( ( ( ( pos__ue[0]- ap.position_ap[0] ) ** 2 ) ) + ( ( ( pos__ue[1] - ap.position_ap[1] ) ** 2 ) ) ) # Distance UE-AP
-
-        if distance_ue_ap >= self.do:  # Distance must be bigger or equal than the fixed reference distance ( 1 meter )
-
-          ue.position_ue = pos__ue
-          self.__coords.append(pos__ue)
-          break
-
-
-  # def distance_ue_ap_(self, ap_: list[PointAcess], ue_: list[UserEquipments]): # Calcule distance UE-AP
-
-  #   if isinstance(ap_, list) and isinstance(ue_, list):
         
-  #     for i, ue in enumerate(ue_):
+        while True:
+
+          x = ((i % int(sqrt(num_aps))) + 0.5) * 1000 / (int(sqrt(num_aps)))
+          y = ((i // int(sqrt(num_aps))) + 0.5) * 1000 / ceil(num_aps / int(sqrt(num_aps)))
+
+          if self.__coords.__contains__((x, y)) == False:
+
+            pos_ap = (x, y)
+
+            aps[i].position_ap = pos_ap
+            ap_positions.append(aps[i].position_ap)
+            self.__coords.append(pos_ap)
+            break
+
+
+  def UE_position(self, ues: list[UserEquipments], aps: list[PointAcess]): # Position UE
+
+    assert isinstance(ues, list) and isinstance(aps, list) # ues and aps must be an list of the PointAcess
+
+    ue_positions = list() # List of positions of the ues
+    num_ues = len(ues)
+
+    for i in range(num_ues):
+      
+      for j, ap in enumerate(aps):
         
-  #       for j, ap in enumerate(ap_):
-          
-  #         distance_ue_ap = sqrt( ( ( ( ue.position_ue[0] - ap.position_ap[0] ) ** 2 ) ) + ( ( ( ue.position_ue[1] - ap.position_ap[1] ) ** 2 ) ) ) # Distance UE-AP
+        while True:
 
-  #         if distance_ue_ap >= self.do:  # Distance must be bigger or equal than the fixed reference distance ( 1 meter )
+          x = np.random.randint(0, 1000) 
+          y = np.random.randint(0, 1000)
+          pos_ue = (x, y)
 
-  #           return distance_ue_ap
-
-  #         else:
-
-  #           raise ValueError('Distance lower than 1 meter!')
+          if (self.__coords.__contains__((x, y)) == False) and (sqrt( ( ( ( pos_ue[0]- ap.position_ap[0] ) ** 2 ) ) + ( ( ( pos_ue[1] - ap.position_ap[1] ) ** 2 ) ) ) >= self.do):
+            ues[i].position_ue = pos_ue
+            ue_positions.append(pos_ue)
+            self.__coords.append(pos_ue)
+            break
 
 
 
@@ -238,9 +227,7 @@ if __name__ == "__main__":
 
     system.ues = ue
 
-  for i in range(num_ue):
-
-    simulate.UE_position(ues_[i], aps_)
+  simulate.UE_position(ues_, aps_)
 
   for i, ue in enumerate(ues_):
     print(f"Position UE{i+1}: {ue.position_ue}") # Position UE
@@ -287,7 +274,6 @@ if __name__ == "__main__":
   for ap in system.aps:
 
     points = [(ap.position_ap[0],ap.position_ap[1] + 20), (ap.position_ap[0] - 20, ap.position_ap[1] - 20), (ap.position_ap[0] + 20, ap.position_ap[1] - 20)]
-
     triangle = Polygon(points, closed=True, edgecolor='red', facecolor='red')
     axs[0, 0].add_patch(triangle)
     axs[0, 0].set_title("Simulate")
