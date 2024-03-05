@@ -231,7 +231,7 @@ if __name__ == "__main__":
   noise_power = ( ( simulate.ko ) * ( simulate.bt / len( ap.channel ) ) if len( ap.channel ) >= 0 else None ) # Noise power
   print(f'Noise Power: {noise_power}W \n')
 
-  num_ue = 100 # Amount of UEs
+  num_ue = 10 # Amount of UEs
   ues_ = [UserEquipments() for _ in range(num_ue)]
 
   for ue in ues_:
@@ -257,9 +257,7 @@ if __name__ == "__main__":
       
         if ( ( others_ues.get_channel() == ue.get_channel() ) and ( others_ues != ue ) ):
         
-          distance_othersUes_ap = sqrt( ( ( ( others_ues.position_ue[0] - ap.position_ap[0] ) ** (2) ) + ( ( others_ues.position_ue[1] - ap.position_ap[1] ) ** (2) ) ) ) # Distance Others_UEs-AP
-          # print(f"\nDistance between UE{k_+1} and AP{j+1}: {distance_othersUes_ap}m")
-
+          distance_othersUes_ap = sqrt( ( ( ( others_ues.position_ue[0] - ap.position_ap[0] ) ** (2) ) + ( ( others_ues.position_ue[1] - ap.position_ap[1] ) ** (2) ) ) )
           # interference_ += (( others_ues.power * ( ( distance_othersUes_ap / ( simulate.do ) ** ( simulate.n ) ) ) )) # interference totally
           interference_ += (( others_ues.power * ( simulate.k / ( distance_othersUes_ap ** ( simulate.n ) ) ) )) # interference totally
           # print(f"Interference between UE{k_+1} and AP{j+1}: {interference_}\n")
@@ -269,7 +267,7 @@ if __name__ == "__main__":
         snr = ( ( ( power / noise_power ) ) ) # SNR in Watts
         sir = ( ( power / interference_ ) ) # SIR in Watts
         sinr = ( ( power / ( interference_ + noise_power ) ) ) # SINR in Watts
-        capacity = ( ( simulate.bt / len(ap.channel) ) * ( log2(1 + sinr) ) ) # Capacity in Bps
+        capacity = ( ( simulate.bt / len(ap.channel) ) * ( log2(1 + sinr) ) ) # Capacity in bps
 
         print(f"Signal-to-noise ratio(SNR): {snr}W") ; snrs.append(snr)
         print(f"Signal-to-interference ratio(SIR): {sir}W") ; sirs.append(sir)
@@ -285,16 +283,10 @@ if __name__ == "__main__":
         all_.append([powers, snr_db, sir_db, sinr_db, capacity_db]) # Collect all results
 
   fig, axs = plt.subplots(2, 3, figsize=(18, 10)) # Graphic
-  padding = 100
 
   for ap in system.aps:
 
     points = [(ap.position_ap[0],ap.position_ap[1] + 20), (ap.position_ap[0] - 20, ap.position_ap[1] - 20), (ap.position_ap[0] + 20, ap.position_ap[1] - 20)]
-
-    min_x_ap = min(ap.position_ap[0] for ap in system.aps)
-    max_x_ap = max(ap.position_ap[0] for ap in system.aps)
-    min_y_ap = min(ap.position_ap[1] for ap in system.aps)
-    max_y_ap = max(ap.position_ap[1] for ap in system.aps)
 
     triangle = Polygon(points, closed=True, edgecolor='red', facecolor='red')
     axs[0, 0].add_patch(triangle)
@@ -302,14 +294,9 @@ if __name__ == "__main__":
 
     for ue in system.ues:
 
-      min_x_ue = min(min_x_ap, ue.position_ue[0])
-      max_x_ue = max(max_x_ap, ue.position_ue[0])
-      min_y_ue = min(min_y_ap, ue.position_ue[1])
-      max_y_ue = max(max_y_ap, ue.position_ue[1])
-
       axs[0, 0].scatter(ue.position_ue[0], ue.position_ue[1], color='black', marker='.')
-      axs[0, 0].set_xlim(0 - padding, 1000 + padding)
-      axs[0, 0].set_ylim(0 - padding, 1000 + padding)
+      axs[0, 0].set_xlim(0, 1000)
+      axs[0, 0].set_ylim(0, 1000)
 
     for result, label, row, col in zip([powers, snrs, sirs, sinrs, capacities], ['Power', 'SNR', 'SIR', 'SINR', 'Capacity'], [0, 0, 1, 1, 1], [1, 2, 0, 1, 2]):
 
