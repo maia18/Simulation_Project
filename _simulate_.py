@@ -249,19 +249,17 @@ if __name__ == "__main__":
           if ( ( others_ues.get_channel() == ue.get_channel() ) and ( others_ues != ue ) ):
           
             distance_othersUes_ap = sqrt( ( ( ( others_ues.position_ue[0] - ap.position_ap[0] ) ** (2) ) + ( ( others_ues.position_ue[1] - ap.position_ap[1] ) ** (2) ) ) )
-            # interference_ += (( others_ues.power * ( ( distance_othersUes_ap / ( simulate.do ) ** ( simulate.n ) ) ) )) # interference totally
             interference_ += ((( others_ues.power * ( simulate.k / ( distance_othersUes_ap ** ( simulate.n ) ) ) ))) # interference totally
-            # print(f"Interference between UE{k_+1} and AP{j+1}: {interference_}\n")
 
         if interference_ > 0:
 
           sir = ( ( power / interference_ ) ) # SIR in Watts
           sinr = ( ( power / ( interference_ + noise_power ) ) ) # SINR in Watts
           capacity = ( ( simulate.bt / len(ap.channel) ) * ( log2(1 + sinr) ) ) # Capacity in bps
-
-          print(f"Signal-to-interference ratio(SIR): {sir}W") ; sirs.append(sir)
+          
+          print("- "*80) ; print(f"Signal-to-interference ratio(SIR): {sir}W") ; sirs.append(sir)
           print(f"Signal-to-interference-Noise ratio(SINR): {sinr}W") ; sinrs.append(sinr)
-          print(f"Capacity: {capacity}bps") ; capacities.append(capacity) ; print("- "*80)
+          print(f"Capacity: {capacity}bps") ; capacities.append(capacity) ; print("- "*80) ; print("\n")
     
           sir_db = [10 * log10(sir_) for sir_ in sirs]
           sinr_db = [10 * log10(sinr_) for sinr_ in sinrs]
