@@ -124,10 +124,10 @@ class System: # System
 
   # Set UE's
   @ues.setter
-  def ues(self, ues: UserEquipments):
+  def ues(self, ues_: list[UserEquipments]):
 
-    assert isinstance(ues, UserEquipments) # UE must be an instance of the class UserEquipments for be add on the list
-    self.__ues.append(ues)
+    assert isinstance(ues_, list) # UE must be an instance of the class UserEquipments for be add on the list
+    self.__ues.extend(ues_)
 
 
 
@@ -195,36 +195,30 @@ class Simulation: # Simulation
 
 if __name__ == "__main__":
 
-  sirs = [] # sirs totallys
-  sinrs = [] # sinrs totallys
-  capacities = [] # capacities totallys
+  sirs_totallys = [] # sirs totallys
+  sinrs_totallys = [] # sinrs totallys
+  capacities_totallys = [] # capacities totallys
 
-  num_sim = 10 # Amount of simulations
+  num_sms = 10 # Amount of simulations
+  num_aps = 64 # Amount of APs
+  num_ues = 10 # Amount of UEs
 
   system = System()
   simulate = Simulation(system)
 
-  num_ap = 64
-  aps_ = [PointAcess((1000, 1000), 10) for _ in range(num_ap)]
+  aps_ = [PointAcess((1000, 1000), 10) for _ in range(num_aps)]
+  ues_ = [UserEquipments() for _ in range(num_ues)]
 
   system.aps = aps_
-    
+  system.ues = ues_
   simulate.AP_position(aps_)
 
   for i, ap in enumerate(system.aps):
-    print(f"AP {i+1} - Position: {ap.position_ap}")
+    print(f"AP{i+1} - Position: {ap.position_ap}")
 
   noise_power = ( ( simulate.ko ) * ( simulate.bt / len( ap.channel ) ) if len( ap.channel ) >= 0 else None ) # Noise power
-  print(f'Noise Power: {noise_power}W \n')
 
-  num_ue = 10 # Amount of UEs
-  ues_ = [UserEquipments() for _ in range(num_ue)]
-
-  for ue in ues_:
-
-    system.ues = ue
-
-  for _ in range(num_sim):
+  for _ in range(num_sms):
     
     simulate.UE_position(ues_, aps_)
 
@@ -233,59 +227,57 @@ if __name__ == "__main__":
       print(f"UE{i+1} Channel: {ue.get_channel()}") # Channel UE
 
       for j, ap in enumerate(aps_):
-
         distances_ue_ap_min = [sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2) for ap in aps_]
         distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
 
         if distance_ue_ap == min(distances_ue_ap_min):
-            print(f"Distance UE{i+1}-AP{j+1}: {distance_ue_ap}m") # Distance AP-UE
-            power = ( ue.power * ( simulate.k / ( distance_ue_ap ** ( simulate.n ) ) ) ) # Power in Watts
-            print(f"Power UE{i+1}-AP{j+1}: {power}W")
+
+          print(f"Distance UE{i+1}-AP{j+1}: {distance_ue_ap}m") # Distance AP-UE
+          power = ( ue.power * ( simulate.k / ( distance_ue_ap ** ( simulate.n ) ) ) ) # Power in Watts
+          print(f"Power UE{i+1}-AP{j+1}: {power}W")
 
         interference_ = 0
 
         for k_, others_ues in enumerate(ues_):
-        
+
           if ( ( others_ues.get_channel() == ue.get_channel() ) and ( others_ues != ue ) ):
-          
+
             distance_othersUes_ap = sqrt( ( ( ( others_ues.position_ue[0] - ap.position_ap[0] ) ** (2) ) + ( ( others_ues.position_ue[1] - ap.position_ap[1] ) ** (2) ) ) )
             interference_ += ((( others_ues.power * ( simulate.k / ( distance_othersUes_ap ** ( simulate.n ) ) ) ))) # interference totally
 
         if interference_ > 0:
 
-          sir = ( ( power / interference_ ) ) # SIR in Watts
-          sinr = ( ( power / ( interference_ + noise_power ) ) ) # SINR in Watts
-          capacity = ( ( simulate.bt / len(ap.channel) ) * ( log2(1 + sinr) ) ) # Capacity in bps
+          sir = ((power / interference_)) # SIR in Watts
+          sinr = ((power / (interference_ + noise_power))) # SINR in Watts
+          capacity = ((simulate.bt / len(ap.channel)) * (log2(1 + sinr))) # Capacity in bps
           
-          print("- "*80) ; print(f"Signal-to-interference ratio(SIR): {sir}W") ; sirs.append(sir)
-          print(f"Signal-to-interference-Noise ratio(SINR): {sinr}W") ; sinrs.append(sinr)
-          print(f"Capacity: {capacity}bps") ; capacities.append(capacity) ; print("- "*80) ; print("\n")
+          print("- "*80) ; print(f"Signal-to-interference ratio(SIR): {sir}W") ; sirs_totallys.append(sir)
+          print(f"Signal-to-interference-Noise ratio(SINR): {sinr}W") ; sinrs_totallys.append(sinr)
+          print(f"Capacity: {capacity}bps") ; capacities_totallys.append(capacity) ; print("- "*80) ; print("\n")
     
-          sir_db = [10 * log10(sir_) for sir_ in sirs]
-          sinr_db = [10 * log10(sinr_) for sinr_ in sinrs]
-          capacity_db = [(capacitie_) for capacitie_ in capacities]
+          sir_db = [10 * log10(sir_) for sir_ in sirs_totallys]
+          sinr_db = [10 * log10(sinr_) for sinr_ in sinrs_totallys]
+          capacity_db = [(capacitie_) for capacitie_ in capacities_totallys]
 
   fig, axs = plt.subplots(2, 2, figsize=(12, 10)) # Graphic
 
   for ap in system.aps:
-
-    points = [(ap.position_ap[0],ap.position_ap[1] + 20), (ap.position_ap[0] - 20, ap.position_ap[1] - 20), (ap.position_ap[0] + 20, ap.position_ap[1] - 20)]
-    triangle = Polygon(points, closed=True, edgecolor='red', facecolor='red')
+    points_ap = [(ap.position_ap[0],ap.position_ap[1] + 20), (ap.position_ap[0] - 20, ap.position_ap[1] - 20), (ap.position_ap[0] + 20, ap.position_ap[1] - 20)]
+    triangle = Polygon(points_ap, closed=True, edgecolor='red', facecolor='red')
     axs[0, 0].add_patch(triangle)
     axs[0, 0].set_title("Simulate")
 
     for ue in system.ues:
-
       axs[0, 0].scatter(ue.position_ue[0], ue.position_ue[1], color='black', marker='.')
       axs[0, 0].set_xlim(0, 1000)
       axs[0, 0].set_ylim(0, 1000)
+      # axs[0, 0].plot([ue.position_ue[0], ap.position_ap[0]], [ue.position_ue[1], ap.position_ap[1]], linestyle='-', color='gray')
+
 
     for result, label, row, col in zip([sir_db, sinr_db, capacity_db], ['SIR', 'SINR', 'Capacity'], [0, 1, 1], [1, 0, 1]):
-
-      filtered_result = [value for value in result if value is not None]
-      filtered_result.sort()
-      cumulative_prob = np.linspace(0, 1, len(filtered_result))
-      axs[row, col].plot(filtered_result, cumulative_prob, label=f"CDF - {label}")
+      results = [value for value in result] ; results.sort()
+      cdf = np.linspace(0, 1, len(results))
+      axs[row, col].plot(results, cdf, label=f"CDF - {label}")
       axs[row, col].set_title(f"CDF - {label}")
       axs[row, col].grid(True)
 
