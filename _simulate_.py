@@ -1,5 +1,5 @@
 # Simulation Monte Carlo - Cellular Wireless Communication Systems
-import numpy as np ; import matplotlib.pyplot as plt ; from math import sqrt,log10,log2, pi, cos, sin, ceil; from matplotlib.patches import Polygon
+import numpy as np ; import matplotlib.pyplot as plt ; from matplotlib.patches import Polygon ; from math import sqrt,log10,log2, pi, cos, sin, ceil
 
 class PointAcess: # Point Acess
 
@@ -9,9 +9,9 @@ class PointAcess: # Point Acess
   def __init__(self, coverage_area:tuple, power_=0):
 
     assert not isinstance(power_, (str, bool, list, tuple)) and ( power_ >= 0 ) # Power must be an number positive
-    assert type(coverage_area) == tuple and ( len(coverage_area) >= 0 ) # Coverage area must be an tuple with len positive
-    self.__coveragearea = (coverage_area)
-    self.__power = power_
+    assert (type(coverage_area) == tuple) and ( len(coverage_area) >= 0 ) # Coverage area must be an tuple with len positive
+    self.__coveragearea = (coverage_area) # Coverage Area of AP
+    self.__power = power_ # Power of AP
 
   # Get coverage area
   @property
@@ -24,7 +24,7 @@ class PointAcess: # Point Acess
   def coverage_area(self, coverage_area_:tuple):
 
     assert type(coverage_area_) == tuple and ( len(coverage_area_) >= 0 ) # New Coverage area must be an tuple with len positive
-    self.__coveragearea = (coverage_area_)
+    self.__coveragearea = (coverage_area_) # New Coverage Area
 
 
   # Get power
@@ -37,9 +37,8 @@ class PointAcess: # Point Acess
   @power.setter
   def power(self, power__):
 
-
     assert not isinstance(power__, (str, bool, list, tuple)) and ( power__ >= 0 ) # Power must be an number positive
-    self.__power = power__
+    self.__power = power__ # New Power 
 
 
   def position_ap(self, position_:tuple): # Position - AP
@@ -65,7 +64,7 @@ class UserEquipments: # User Equipments
 
     assert not isinstance(power_, (str, bool, list, tuple)) and ( power_ >= 0 ) # Power must be an number positive
     self.__channel = np.random.choice(PointAcess.channel) # Choose an channel
-    self.__power = power_
+    self.__power = power_ # Power of UE
 
   # Get power
   @property
@@ -139,7 +138,7 @@ class Simulation: # Simulation
 
     assert isinstance(system, System) # system must be an instance of the class System
     self.system = system
-    self.__coords = list() # Coordinates ocupeds
+    self.coords = list() # Coordinates ocupeds
 
     self.bt = (10**(8)) # Total available bandwidth ( 100MHz = 10^(8)Hz )
     self.ko = (10**(-20)) # Constant for the noise power ( 10^(-17)miliwatts/Hz = 10^(-20)watts/Hz )
@@ -151,7 +150,6 @@ class Simulation: # Simulation
     
     assert len(aps) > 0 and isinstance(aps, list) # Amount of APs must be bigger than zero
 
-    ap_positions = list() # List of positions of the aps
     num_aps = len(aps)
     
     for i in range(num_aps):
@@ -161,48 +159,47 @@ class Simulation: # Simulation
           x = ((i % int(sqrt(num_aps))) + 0.5) * 1000 / (int(sqrt(num_aps)))
           y = ((i // int(sqrt(num_aps))) + 0.5) * 1000 / ceil(num_aps / int(sqrt(num_aps)))
 
-          if self.__coords.__contains__((x, y)) == False:
+          if self.coords.__contains__((x, y)) == False:
 
             pos_ap = (x, y)
 
             aps[i].position_ap = pos_ap
-            ap_positions.append(aps[i].position_ap)
-            self.__coords.append(pos_ap)
+            # self.ap_positions.append(aps[i].position_ap)
+            self.coords.append(aps[i].position_ap)
             break
 
-
+          
   def UE_position(self, ues: list[UserEquipments], aps: list[PointAcess]): # Position UE
 
     assert isinstance(ues, list) and isinstance(aps, list) # ues and aps must be an list of the PointAcess
 
-    ue_positions = list() # List of positions of the ues
     num_ues = len(ues)
+    ap = np.random.choice(aps)
 
     for i in range(num_ues):
       
-      for j, ap in enumerate(aps):
-        
-        while True:
+      while True:
 
-          x = np.random.randint(0, 1000) 
-          y = np.random.randint(0, 1000)
+        x = np.random.randint(0, 1000) 
+        y = np.random.randint(0, 1000)
+        distance_ue_ap = sqrt( ( ( ( x - ap.position_ap[0] ) ** 2 ) ) + ( ( ( y - ap.position_ap[1] ) ** 2 ) ) )
+
+        if (self.coords.__contains__((x, y)) == False) and (distance_ue_ap >= self.do):
+
           pos_ue = (x, y)
-
-          if (self.__coords.__contains__((x, y)) == False) and (sqrt( ( ( ( pos_ue[0]- ap.position_ap[0] ) ** 2 ) ) + ( ( ( pos_ue[1] - ap.position_ap[1] ) ** 2 ) ) ) >= self.do):
-            ues[i].position_ue = pos_ue
-            ue_positions.append(pos_ue)
-            self.__coords.append(pos_ue)
-            break
+          ues[i].position_ue = pos_ue
+          self.coords.append(ues[i].position_ue)
+          break
 
 
 
 if __name__ == "__main__":
 
-  powers = [] # Powers totallys
-  snrs = [] # snrs totallys
   sirs = [] # sirs totallys
   sinrs = [] # sinrs totallys
-  capacities = [] # capacities totallys 
+  capacities = [] # capacities totallys
+
+  num_sim = 10 # Amount of simulations
 
   system = System()
   simulate = Simulation(system)
@@ -227,49 +224,50 @@ if __name__ == "__main__":
 
     system.ues = ue
 
-  simulate.UE_position(ues_, aps_)
+  for _ in range(num_sim):
+    
+    simulate.UE_position(ues_, aps_)
 
-  for i, ue in enumerate(ues_):
-    print(f"Position UE{i+1}: {ue.position_ue}") # Position UE
-    print(f"UE{i+1} Channel: {ue.get_channel()}") # Channel UE
+    for i, ue in enumerate(ues_):
+      print(f"Position UE{i+1}: {ue.position_ue}") # Position UE
+      print(f"UE{i+1} Channel: {ue.get_channel()}") # Channel UE
 
-    for j, ap in enumerate(aps_):
+      for j, ap in enumerate(aps_):
 
-      print(f"Distance UE{i+1}-AP{j+1}: { sqrt( ( ( ( ue.position_ue[0] - ap.position_ap[0] ) ** 2 ) ) + ( ( ( ue.position_ue[1] - ap.position_ap[1] ) ** 2 ) ) )}m") # Distance AP-UE
-      power = ( ue.power * ( simulate.k / ( sqrt( ( ( ( ue.position_ue[0] - ap.position_ap[0] ) ** 2 ) ) + ( ( ( ue.position_ue[1] - ap.position_ap[1] ) ** 2 ) ) ) ** ( simulate.n ) ) ) ) # Power in Watts
-      print(f"Power UE{i+1}-AP{j+1}: {power}W") ; powers.append(power)
-      interference_ = 0
+        distances_ue_ap_min = [sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2) for ap in aps_]
+        distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
 
-      for k_, others_ues in enumerate(ues_):
-      
-        if ( ( others_ues.get_channel() == ue.get_channel() ) and ( others_ues != ue ) ):
+        if distance_ue_ap == min(distances_ue_ap_min):
+            print(f"Distance UE{i+1}-AP{j+1}: {distance_ue_ap}m") # Distance AP-UE
+            power = ( ue.power * ( simulate.k / ( distance_ue_ap ** ( simulate.n ) ) ) ) # Power in Watts
+            print(f"Power UE{i+1}-AP{j+1}: {power}W")
+
+        interference_ = 0
+
+        for k_, others_ues in enumerate(ues_):
         
-          distance_othersUes_ap = sqrt( ( ( ( others_ues.position_ue[0] - ap.position_ap[0] ) ** (2) ) + ( ( others_ues.position_ue[1] - ap.position_ap[1] ) ** (2) ) ) )
-          # interference_ += (( others_ues.power * ( ( distance_othersUes_ap / ( simulate.do ) ** ( simulate.n ) ) ) )) # interference totally
-          interference_ += (( others_ues.power * ( simulate.k / ( distance_othersUes_ap ** ( simulate.n ) ) ) )) # interference totally
-          # print(f"Interference between UE{k_+1} and AP{j+1}: {interference_}\n")
+          if ( ( others_ues.get_channel() == ue.get_channel() ) and ( others_ues != ue ) ):
+          
+            distance_othersUes_ap = sqrt( ( ( ( others_ues.position_ue[0] - ap.position_ap[0] ) ** (2) ) + ( ( others_ues.position_ue[1] - ap.position_ap[1] ) ** (2) ) ) )
+            # interference_ += (( others_ues.power * ( ( distance_othersUes_ap / ( simulate.do ) ** ( simulate.n ) ) ) )) # interference totally
+            interference_ += ((( others_ues.power * ( simulate.k / ( distance_othersUes_ap ** ( simulate.n ) ) ) ))) # interference totally
+            # print(f"Interference between UE{k_+1} and AP{j+1}: {interference_}\n")
 
-      if interference_ > 0:
-        
-        snr = ( ( ( power / noise_power ) ) ) # SNR in Watts
-        sir = ( ( power / interference_ ) ) # SIR in Watts
-        sinr = ( ( power / ( interference_ + noise_power ) ) ) # SINR in Watts
-        capacity = ( ( simulate.bt / len(ap.channel) ) * ( log2(1 + sinr) ) ) # Capacity in bps
+        if interference_ > 0:
 
-        print(f"Signal-to-noise ratio(SNR): {snr}W") ; snrs.append(snr)
-        print(f"Signal-to-interference ratio(SIR): {sir}W") ; sirs.append(sir)
-        print(f"Signal-to-interference-Noise ratio(SINR): {sinr}W") ; sinrs.append(sinr)
-        print(f"Capacity: {capacity}") ; capacities.append(capacity) ; print("- "*80)
-  
-        snr_db = [10 * log10(snr_) for snr_ in snrs]
-        sir_db = [10 * log10(sir_) for sir_ in sirs]
-        sinr_db = [10 * log10(sinr_) for sinr_ in sinrs]
-        capacity_db = [(capacitie_) for capacitie_ in capacities]
+          sir = ( ( power / interference_ ) ) # SIR in Watts
+          sinr = ( ( power / ( interference_ + noise_power ) ) ) # SINR in Watts
+          capacity = ( ( simulate.bt / len(ap.channel) ) * ( log2(1 + sinr) ) ) # Capacity in bps
 
-        all_ = []
-        all_.append([powers, snr_db, sir_db, sinr_db, capacity_db]) # Collect all results
+          print(f"Signal-to-interference ratio(SIR): {sir}W") ; sirs.append(sir)
+          print(f"Signal-to-interference-Noise ratio(SINR): {sinr}W") ; sinrs.append(sinr)
+          print(f"Capacity: {capacity}bps") ; capacities.append(capacity) ; print("- "*80)
+    
+          sir_db = [10 * log10(sir_) for sir_ in sirs]
+          sinr_db = [10 * log10(sinr_) for sinr_ in sinrs]
+          capacity_db = [(capacitie_) for capacitie_ in capacities]
 
-  fig, axs = plt.subplots(2, 3, figsize=(18, 10)) # Graphic
+  fig, axs = plt.subplots(2, 2, figsize=(12, 10)) # Graphic
 
   for ap in system.aps:
 
@@ -284,7 +282,7 @@ if __name__ == "__main__":
       axs[0, 0].set_xlim(0, 1000)
       axs[0, 0].set_ylim(0, 1000)
 
-    for result, label, row, col in zip([powers, snrs, sirs, sinrs, capacities], ['Power', 'SNR', 'SIR', 'SINR', 'Capacity'], [0, 0, 1, 1, 1], [1, 2, 0, 1, 2]):
+    for result, label, row, col in zip([sir_db, sinr_db, capacity_db], ['SIR', 'SINR', 'Capacity'], [0, 1, 1], [1, 0, 1]):
 
       filtered_result = [value for value in result if value is not None]
       filtered_result.sort()
