@@ -4,6 +4,7 @@ import numpy as np ; import matplotlib.pyplot as plt ; from matplotlib.patches i
 class PointAcess: # Point Acess
 
   channel = list(range(1,6)) # Channels
+  noise_power = ((((10**(-20))) * ((10**(8)) / len(channel)))) # Noise power
 
   # class constructor
   def __init__(self, coverage_area:tuple, power_=0):
@@ -196,6 +197,15 @@ class Simulation: # Simulation
               self.coords.append(ues[i].position_ue)
               break
 
+  def distance(self):
+    
+    distances_ue_ap_min = [sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2) for ap in self.system.aps]
+    distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
+
+    if distance_ue_ap == min(distances_ue_ap_min):
+
+      return distance_ue_ap
+
 
 
 if __name__ == "__main__":
@@ -205,13 +215,11 @@ if __name__ == "__main__":
   capacities_totallys = [] # capacities totallys
 
   system = System()
-  simulate = Simulation(system, 10, 4, 10)
+  simulate = Simulation(system, 1, 4, 10)
 
   system.aps = [PointAcess((1000, 1000), 10) for _ in range(simulate.num_aps)]
   system.ues = [UserEquipments() for _ in range(simulate.num_ues)]
   simulate.AP_position(system.aps)
-
-  noise_power = (((simulate.ko) * (simulate.bt / len(PointAcess.channel)))) # Noise power
 
   for _ in range(simulate.num_sms):
 
@@ -225,13 +233,10 @@ if __name__ == "__main__":
 
         for j, ap in enumerate(system.aps):
 
-          distances_ue_ap_min = [sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2) for ap in system.aps]
-          distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
+          if simulate.distance():
 
-          if distance_ue_ap == min(distances_ue_ap_min):
-
-            power = ( ue.power * ( simulate.k / ( distance_ue_ap ** ( simulate.n ) ) ) ) # Power in Watts
-            print(f"Distance UE{i+1}-AP{j+1}: {distance_ue_ap}m, Power: {power}W") # Distance AP-UE
+            power = ( ue.power * ( simulate.k / ( simulate.distance() ** ( simulate.n ) ) ) ) # Power in Watts
+            print(f"Distance UE{i+1}-AP{j+1}: {simulate.distance()}m, Power: {power}W") # Distance AP-UE
 
             interference_ = 0
 
@@ -245,7 +250,7 @@ if __name__ == "__main__":
             if interference_ > 0:
 
               sir = ((power / interference_)) ; sirs_totallys.append(sir) # SIR in Watts
-              sinr = ((power / (interference_ + noise_power))) ; sinrs_totallys.append(sinr) # SINR in Watts
+              sinr = ((power / (interference_ + PointAcess.noise_power))) ; sinrs_totallys.append(sinr) # SINR in Watts
               capacity = ((simulate.bt / len(PointAcess.channel)) * (log2(1 + sinr))) ; capacities_totallys.append(capacity) # Capacity in bps
 
               print("- "*80) ; print(f"SIR: {sir}W, SINR: {sinr}W, Capacity: {capacity}bps") ; print("- "*80) ; print('\n')
@@ -261,11 +266,8 @@ if __name__ == "__main__":
       axs[0, 0].set_title("Simulate")
       axs[0, 0].scatter(ue.position_ue[0], ue.position_ue[1], color='black', marker='.')
       axs[0, 0].add_patch(Polygon([(ap.position_ap[0],ap.position_ap[1] + 20), (ap.position_ap[0] - 20, ap.position_ap[1] - 20), (ap.position_ap[0] + 20, ap.position_ap[1] - 20)], closed=True, edgecolor='red', facecolor='red'))
-      axs[0, 0].set_xlim(0, 1000)
-      axs[0, 0].set_ylim(0, 1000)
-      distances_ue_ap_min = [sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2) for ap in system.aps]
-      distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
-      if distance_ue_ap == min(distances_ue_ap_min):
+      axs[0, 0].set(xlim=(0, 1000), ylim=(0, 1000))
+      if simulate.distance():
           axs[0, 0].plot([ue.position_ue[0], ap.position_ap[0]], [ue.position_ue[1], ap.position_ap[1]], linestyle='dashed', color='blue')
 
   for result, label, row, col in zip([sir_db, sinr_db, capacity_db], ['SIR', 'SINR', 'Capacity'], [0, 1, 1], [1, 0, 1]):
