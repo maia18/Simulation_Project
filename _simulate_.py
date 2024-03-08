@@ -7,7 +7,7 @@ class PointAcess: # Point Acess
   noise_power = ((((10**(-20))) * ((10**(8)) / len(channel)))) # Noise power
 
   # class constructor
-  def __init__(self, coverage_area:tuple, power_=0):
+  def __init__(self, coverage_area:tuple, power_):
 
     assert not isinstance(power_, (str, bool, list, tuple)) and ( power_ >= 0 ) # Power must be an number positive
     assert (type(coverage_area) == tuple) and ( len(coverage_area) >= 0 ) # Coverage area must be an tuple with len positive
@@ -45,16 +45,10 @@ class PointAcess: # Point Acess
   def position_ap(self, position_:tuple): # Position - AP
 
     assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
-
-    height, width = self.coverage_area
-
-    if 0 <= position_[0] < height and 0 <= position_[1] < width:
-        self.__position = position_
-        self.__coveragearea[self.__position[0]:self.__position[0] + 10, self.__position[1]:self.__position[1] + 10] = 1
-        return self.__position
-
-    else:
-        raise AssertionError("Position out of the coverage area...")
+    assert (0 <= position_[0] <= self.coverage_area[0]) and (0 <= position_[1] <= self.coverage_area[1])
+    self.__position = position_
+    self.__coveragearea[self.__position[0]:self.__position[0] + 10, self.__position[1]:self.__position[1] + 10] = 1
+    return self.__position
 
 
 
@@ -154,20 +148,15 @@ class Simulation: # Simulation
 
   def AP_position(self, aps: list[PointAcess]):
 
-    assert len(aps) > 0 and isinstance(aps, list) # Amount of APs must be bigger than zero
+    assert (len(aps) > 0) and isinstance(aps, list) # Amount of APs must be bigger than zero
 
-    num_aps = len(aps)
-
-    for i in range(num_aps):
+    for i in range(len(aps)):
 
         while True:
 
-          x = ((i % int(sqrt(num_aps))) + 0.5) * 1000 / (int(sqrt(num_aps)))
-          y = ((i // int(sqrt(num_aps))) + 0.5) * 1000 / ceil(num_aps / int(sqrt(num_aps)))
+          pos_ap = (((i%int(sqrt(len(aps)))) + 0.5) * 1000 / (int(sqrt(len(aps)))), ((i//int(sqrt(len(aps)))) + 0.5) * 1000 / ceil(len(aps) / int(sqrt(len(aps)))))
 
-          if self.coords.__contains__((x, y)) == False:
-
-            pos_ap = (x, y)
+          if self.coords.__contains__(pos_ap) == False:
 
             aps[i].position_ap = pos_ap
             self.coords.append(aps[i].position_ap)
@@ -185,28 +174,24 @@ class Simulation: # Simulation
 
         while True:
 
-          x = np.random.randint(0, 1000)
-          y = np.random.randint(0, 1000)
-          distances_ue_ap_min = [sqrt((((x - ap.position_ap[0]) ** 2)) + (((y - ap.position_ap[1]) ** 2)))]
-          distance_ue_ap = sqrt((((x - ap.position_ap[0]) ** 2)) + (((y - ap.position_ap[1]) ** 2)))
+          pos_ue = (np.random.randint(0, 1000), np.random.randint(0, 1000))
+          distances_ue_ap_min = [sqrt((((pos_ue[0] - ap.position_ap[0]) ** 2)) + (((pos_ue[1] - ap.position_ap[1]) ** 2)))]
 
-          if (self.coords.__contains__((x, y)) == False) and (distance_ue_ap >= self.do) and distance_ue_ap == min(distances_ue_ap_min):
+          if (self.coords.__contains__(pos_ue) == False) and min(distances_ue_ap_min) and (min(distances_ue_ap_min) >= self.do):
 
-              pos_ue = (x, y)
               ues[i].position_ue = pos_ue
               self.coords.append(ues[i].position_ue)
               break
+
 
   def distance(self):
     
     distances_ue_ap_min = [sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2) for ap in self.system.aps]
     distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
 
-    if distance_ue_ap == min(distances_ue_ap_min):
+    if (distance_ue_ap >= self.do) and (distance_ue_ap == min(distances_ue_ap_min)):
 
       return distance_ue_ap
-
-
 
 if __name__ == "__main__":
 
@@ -215,7 +200,7 @@ if __name__ == "__main__":
   capacities_totallys = [] # capacities totallys
 
   system = System()
-  simulate = Simulation(system, 1, 4, 10)
+  simulate = Simulation(system, 100, 64, 10)
 
   system.aps = [PointAcess((1000, 1000), 10) for _ in range(simulate.num_aps)]
   system.ues = [UserEquipments() for _ in range(simulate.num_ues)]
@@ -223,29 +208,27 @@ if __name__ == "__main__":
 
   for _ in range(simulate.num_sms):
 
-    print("- "*80) ; print(f"Simulation {_+1}") ; print("- "*80)
+    print("- "*45) ; print(f"Simulation {_+1}") ; print("- "*45)
     simulate.UE_position(system.ues, system.aps)
 
     for i, ue in enumerate(system.ues):
 
-        print(f"Position UE{i+1}: {ue.position_ue}") # Position UE
-        print(f"UE{i+1} Channel: {ue.get_channel()}") # Channel UE
+        print(f"Position UE{i+1}: {ue.position_ue}, Channel: {ue.get_channel()}") # Position and Channel of UE
 
         for j, ap in enumerate(system.aps):
 
           if simulate.distance():
 
-            power = ( ue.power * ( simulate.k / ( simulate.distance() ** ( simulate.n ) ) ) ) # Power in Watts
-            print(f"Distance UE{i+1}-AP{j+1}: {simulate.distance()}m, Power: {power}W") # Distance AP-UE
+            power = (ue.power * (simulate.k / (simulate.distance() ** (simulate.n)))) # Power in Watts
 
             interference_ = 0
 
             for k_, others_ues in enumerate(system.ues):
 
-              if ( ( others_ues.get_channel() == ue.get_channel() ) and ( others_ues != ue ) ):
+              if ((others_ues.get_channel() == ue.get_channel()) and (others_ues != ue)):
 
-                distance_othersUes_ap = sqrt( ( ( ( others_ues.position_ue[0] - ap.position_ap[0] ) ** (2) ) + ( ( others_ues.position_ue[1] - ap.position_ap[1] ) ** (2) ) ) )
-                interference_ += ((( others_ues.power * ( simulate.k / ( distance_othersUes_ap ** ( simulate.n ) ) ) ))) # interference totally
+                distance_othersUes_ap = sqrt((((others_ues.position_ue[0] - ap.position_ap[0]) ** (2)) + ((others_ues.position_ue[1] - ap.position_ap[1]) ** (2))))
+                interference_ += (((others_ues.power * (simulate.k / (simulate.distance() ** (simulate.n)))))) # interference totally
 
             if interference_ > 0:
 
@@ -253,13 +236,13 @@ if __name__ == "__main__":
               sinr = ((power / (interference_ + PointAcess.noise_power))) ; sinrs_totallys.append(sinr) # SINR in Watts
               capacity = ((simulate.bt / len(PointAcess.channel)) * (log2(1 + sinr))) ; capacities_totallys.append(capacity) # Capacity in bps
 
-              print("- "*80) ; print(f"SIR: {sir}W, SINR: {sinr}W, Capacity: {capacity}bps") ; print("- "*80) ; print('\n')
+              print("- "*45) ; print(f"SIR: {sir}W, SINR: {sinr}W, Capacity: {capacity}bps") ; print("- "*45) ; print('\n')
 
               sir_db = [10 * log10(sir_) for sir_ in sirs_totallys]
               sinr_db = [10 * log10(sinr_) for sinr_ in sinrs_totallys]
               capacity_db = [(capacitie_) for capacitie_ in capacities_totallys]
 
-  fig, axs = plt.subplots(2, 2, figsize=(12, 10)) # Graphic
+  fig, axs = plt.subplots(2, 2, figsize=(10, 10)) # Graphic
 
   for ap in system.aps:
     for ue in system.ues:
