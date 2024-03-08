@@ -228,7 +228,7 @@ if __name__ == "__main__":
               if ((others_ues.get_channel() == ue.get_channel()) and (others_ues != ue)):
 
                 distance_othersUes_ap = sqrt((((others_ues.position_ue[0] - ap.position_ap[0]) ** (2)) + ((others_ues.position_ue[1] - ap.position_ap[1]) ** (2))))
-                interference_ += (((others_ues.power * (simulate.k / (simulate.distance() ** (simulate.n)))))) # interference totally
+                interference_ += (((others_ues.power * (simulate.k / (distance_othersUes_ap ** (simulate.n)))))) # interference totally
 
             if interference_ > 0:
 
