@@ -124,6 +124,11 @@ class System: # System
     assert isinstance(ues_, list) # UE must be an instance of the class UserEquipments for be add on the list
     self.__ues.extend(ues_)
 
+  def distance_min(self):
+    
+    distances_ue_ap_min = [sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2) for ap in self.__aps]
+    return min(distances_ue_ap_min)
+  
 
 
 class Simulation: # Simulation
@@ -184,14 +189,17 @@ class Simulation: # Simulation
               break
 
 
-  def distance(self):
-    
-    distances_ue_ap_min = [sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2) for ap in self.system.aps]
+  def distance(self, ue: UserEquipments):
+
     distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
 
-    if (distance_ue_ap >= self.do) and (distance_ue_ap == min(distances_ue_ap_min)):
-
+    if (distance_ue_ap >= self.do):
       return distance_ue_ap
+    
+    # and (distance_ue_ap == self.system.distance_min()):
+
+
+    
 
 if __name__ == "__main__":
 
@@ -200,7 +208,7 @@ if __name__ == "__main__":
   capacities_totallys = [] # capacities totallys
 
   system = System()
-  simulate = Simulation(system, 100, 64, 10)
+  simulate = Simulation(system, 1, 4, 10)
 
   system.aps = [PointAcess((1000, 1000), 10) for _ in range(simulate.num_aps)]
   system.ues = [UserEquipments() for _ in range(simulate.num_ues)]
@@ -217,9 +225,10 @@ if __name__ == "__main__":
 
         for j, ap in enumerate(system.aps):
 
-          if simulate.distance():
+          if simulate.distance(ue) == system.distance_min():
 
-            power = (ue.power * (simulate.k / (simulate.distance() ** (simulate.n)))) # Power in Watts
+            power = (ue.power * (simulate.k / (simulate.distance(ue) ** (simulate.n)))) # Power in Watts
+            print(power)
 
             interference_ = 0
 
@@ -227,8 +236,8 @@ if __name__ == "__main__":
 
               if ((others_ues.get_channel() == ue.get_channel()) and (others_ues != ue)):
 
-                distance_othersUes_ap = sqrt((((others_ues.position_ue[0] - ap.position_ap[0]) ** (2)) + ((others_ues.position_ue[1] - ap.position_ap[1]) ** (2))))
-                interference_ += (((others_ues.power * (simulate.k / (distance_othersUes_ap ** (simulate.n)))))) # interference totally
+                # distance_othersUes_ap = sqrt((((others_ues.position_ue[0] - ap.position_ap[0]) ** (2)) + ((others_ues.position_ue[1] - ap.position_ap[1]) ** (2))))
+                interference_ += (((others_ues.power * (simulate.k / (simulate.distance(others_ues) ** (simulate.n)))))) # interference totally
 
             if interference_ > 0:
 
