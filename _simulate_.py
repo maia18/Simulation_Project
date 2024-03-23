@@ -212,7 +212,7 @@ if __name__ == "__main__":
   capacities_totallys = [] # capacities totallys
 
   system = System()
-  simulate = Simulation(system, 1, 64, 10)
+  simulate = Simulation(system, 1000, 64, 10)
 
   system.aps = [PointAcess((1000, 1000), 10) for _ in range(simulate.num_aps)]
   system.ues = [UserEquipments() for _ in range(simulate.num_ues)]
