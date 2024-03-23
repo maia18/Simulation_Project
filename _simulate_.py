@@ -212,7 +212,7 @@ if __name__ == "__main__":
   capacities_totallys = [] # capacities totallys
 
   system = System()
-  simulate = Simulation(system, 100, 64, 10)
+  simulate = Simulation(system, 1, 64, 10)
 
   system.aps = [PointAcess((1000, 1000), 10) for _ in range(simulate.num_aps)]
   system.ues = [UserEquipments() for _ in range(simulate.num_ues)]
@@ -249,7 +249,7 @@ if __name__ == "__main__":
                 sinr_db = [10 * log10(sinr_) for sinr_ in sinrs_totallys]
                 capacity_db = [(capacitie_) for capacitie_ in capacities_totallys]
 
-  fig, axs = plt.subplots(2, 2, figsize=(10, 10)) # Graphic
+  fig, axs = plt.subplots(3, 1, figsize=(10, 10)) # Graphic
 
   for ap in system.aps:
     for ue in system.ues:
