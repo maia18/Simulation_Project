@@ -1,5 +1,5 @@
 # Simulation Monte Carlo - Cellular Wireless Communication Systems
-import numpy as np;import matplotlib.pyplot as plt;from matplotlib.patches import Polygon;from math import sqrt,log10,log2,ceil
+import numpy as np;import matplotlib.pyplot as plt;from matplotlib.patches import Polygon;from math import sqrt,log10,log2,ceil;
 
 class PointAcess: # Point Acess
 
@@ -159,7 +159,7 @@ class Simulation: # Simulation
       distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
       if (distance_ue_ap >= self.do):
         return distance_ue_ap
-  
+
     if isinstance(ue, tuple):
 
       distance_ue_ap = sqrt((ue[0] - ap.position_ap[0]) ** 2 + (ue[1] - ap.position_ap[1]) ** 2)
@@ -223,56 +223,53 @@ if __name__ == "__main__":
   for ap in system.aps:
     for ue in system.ues:
       axs[0].set_title("Simulate")
-      # axs[0].set_title(f"APS: {simulate.num_aps}, UES: {simulate.num_ues}, SMS: {simulate.num_sms}", loc="right", fontsize=8)
-      # axs[0].scatter(ue.position_ue[0], ue.position_ue[1], color='black', marker='.')
+      axs[0].set_title(f"APS: {simulate.num_aps}, UES: {simulate.num_ues}, SMS: {simulate.num_sms}", loc="right", fontsize=8)
       axs[0].add_patch(Polygon([(ap.position_ap[0],ap.position_ap[1] + 20), (ap.position_ap[0] - 20, ap.position_ap[1] - 20), (ap.position_ap[0] + 20, ap.position_ap[1] - 20)], closed=True, edgecolor='red', facecolor='red'))
       axs[0].set(xlim=(0, 1000), ylim=(0, 1000))
-      # if simulate.distance(ue) == system.distance_min():
-      #   axs[0].plot([ue.position_ue[0], ap.position_ap[0]], [ue.position_ue[1], ap.position_ap[1]], linestyle='dashed', color='blue')
 
   for _ in range(simulate.num_sms):
-
+    
     simulate.UE_position(system.ues)
-    # if simulate.distance(ue) == system.distance_min():
-    #   axs[0].plot([ue.position_ue[0], ap.position_ap[0]], [ue.position_ue[1], ap.position_ap[1]], linestyle='dashed', color='blue')
-    #   axs[0].scatter(ue.position_ue[0], ue.position_ue[1], color='black', marker='.')
 
     for j, ap in enumerate(system.aps):
-
+      
       for i, ue in enumerate(system.ues):
+        
+        axs[0].scatter(ue.position_ue[0], ue.position_ue[1], color='blue', marker='.')
 
-        # if simulate.distance(ue) == system.distance_min():
+        if simulate.distance(ue) == system.distance_min():
+    
+          axs[0].plot([ue.position_ue[0], ap.position_ap[0]], [ue.position_ue[1], ap.position_ap[1]], linestyle='dashed', color='black', linewidth=0.9)
 
-        #   axs[0].scatter(ue.position_ue[0], ue.position_ue[1], color='black', marker='.')
-        #   axs[0].plot([ue.position_ue[0], ap.position_ap[0]], [ue.position_ue[1], ap.position_ap[1]], linestyle='dashed', color='blue')
+          power = (ue.power * (simulate.k / (simulate.distance(ue) ** (simulate.n)))) # Power in Watts
 
-        power = (ue.power * (simulate.k / (simulate.distance(ue) ** (simulate.n)))) # Power in Watts
+          interference_ = 0
 
-        interference_ = 0
-
-        for k_, others_ues in enumerate(system.ues):
-          
-          if ((others_ues.get_channel() == ue.get_channel()) and (others_ues != ue)):
-
+          for k_, others_ues in enumerate(system.ues):
+            
+            if ((others_ues.get_channel() == ue.get_channel()) and (others_ues != ue)):
+              
               interference_ += (((others_ues.power * (simulate.k / (simulate.distance(others_ues) ** (simulate.n)))))) # interference totally
 
               if interference_ > 0:
+                
+                sinr = ((power / (interference_ + PointAcess.noise_power))) ; sinrs_totallys.append(sinr) # SINR in Watts
+                capacity = ((simulate.bt / len(PointAcess.channel)) * (log2(1 + ((power / (interference_ + PointAcess.noise_power)))))) ; capacities_totallys.append(capacity) # Capacity in bps
+                
+                sinr_db = [10 * log10(sinr_) for sinr_ in sinrs_totallys]   
+                capacity_db = [(capacitie_) for capacitie_ in capacities_totallys]
 
-                #sinr = ((power / (interference_ + PointAcess.noise_power))) ; 
-                sinrs_totallys.append(((power / (interference_ + PointAcess.noise_power))) ) # SINR in Watts
-                #capacity = ((simulate.bt / len(PointAcess.channel)) * (log2(1 + ((power / (interference_ + PointAcess.noise_power)))))) ; 
-                capacities_totallys.append(((simulate.bt / len(PointAcess.channel)) * (log2(1 + ((power / (interference_ + PointAcess.noise_power))))))) # Capacity in bps
-         
-          for result, label, row in zip([[10 * log10(sinr_) for sinr_ in sinrs_totallys], [(capacitie_) for capacitie_ in capacities_totallys]], ['SINR', 'Capacity'], [1, 2]):
-            results = [value for value in result] ; results.sort()
-            cdf = np.linspace(0, 1, len(results))
-            axs[row].plot(results, cdf, label=f"CDF - {label}")     
-            axs[row].set_title(f"CDF - {label}")
-            axs[row].set_title(f"APS: {simulate.num_aps}, UES: {simulate.num_ues}, SMS: {simulate.num_sms}", loc="right", fontsize=8)
-            axs[row].grid(True)
+                for result, label, row in zip([sinr_db, capacity_db], ['SINR', 'Capacity'], [1, 2]):
+                  
+                  results = [value for value in result] ; results.sort()
+                  cdf = np.linspace(0, 1, len(results))
+                  axs[row].plot(results, cdf, label=f"CDF - {label}")
+                  axs[row].set_title(f"CDF - {label}")
+                  axs[row].set_title(f"APS: {simulate.num_aps}, UES: {simulate.num_ues}, SMS: {simulate.num_sms}", loc="right", fontsize=8)
+                  axs[row].grid(True)
 
   plt.show()
-  
+
                 # sinr_db = [10 * log10(sinr_) for sinr_ in sinrs_totallys]
                 # capacity_db = [(capacitie_) for capacitie_ in capacities_totallys]
 
@@ -289,7 +286,7 @@ if __name__ == "__main__":
                 # for result, label, row in zip([[10 * log10(sinr_) for sinr_ in sinrs_totallys], [(capacitie_) for capacitie_ in capacities_totallys]], ['SINR', 'Capacity'], [1, 2]):
                   # results = [value for value in result] ; results.sort()
                   # cdf = np.linspace(0, 1, len(results))
-                  # axs[row].plot(results, cdf, label=f"CDF - {label}")     
+                  # axs[row].plot(results, cdf, label=f"CDF - {label}")
                   # axs[row].set_title(f"CDF - {label}")
                   # axs[row].grid(True)
 
