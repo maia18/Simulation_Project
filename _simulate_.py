@@ -138,13 +138,14 @@ class Simulation: # Simulation
 
     self.num_sms = num_sms # Amount of simulations
     self.num_aps = num_aps # Amount of APs
-    self.num_ues = list(range(1,6)) # Amount of UEs
+    self.num_ues = list(range(1,101)) # Amount of UEs
 
     self.bt = (10**(8)) # Total available bandwidth ( 100MHz = 10^(8)Hz )
     self.ko = (10**(-20)) # Constant for the noise power ( 10^(-17)miliwatts/Hz = 10^(-20)watts/Hz )
     self.do = 1 # fixed reference distance ( 1 meter )
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
+
 
   def distance(self, ue, ap):
 
@@ -159,8 +160,7 @@ class Simulation: # Simulation
       distance_ue_ap = sqrt((ue[0] - ap.position_ap[0]) ** 2 + (ue[1] - ap.position_ap[1]) ** 2)
       if (distance_ue_ap >= self.do):
         return distance_ue_ap
-
-
+      
 
   def AP_position(self, aps: list[PointAcess]):
 
@@ -201,12 +201,10 @@ def run_simulation(simulate: Simulation):
   system.aps = [PointAcess((1000, 1000), 10) for _ in range(simulate.num_aps)]
   system.ues = [UserEquipments() for _, _ in enumerate(simulate.num_ues)]
   simulate.AP_position(system.aps)
-
+  sinrs_totallys = []
+  capacities_totallys = []
+    
   for _ in range(simulate.num_sms):
-    sinrs_totallys = []
-    capacities_totallys = []
-    results_ues = []
-
     simulate.UE_position(system.ues)
     for j, ap in enumerate(system.aps):
       for i, ue in enumerate(system.ues):
@@ -223,7 +221,6 @@ def run_simulation(simulate: Simulation):
                 capacity = ((simulate.bt / len(PointAcess.channel)) * (log2(1 + ((power / (interference_ + PointAcess.noise_power))))))  # Capacity in bps
                 capacities_totallys.append(capacity)
                 sinrs_totallys.append(sinr_db)
-                results_ues.append([sinrs_totallys,capacities_totallys])
 
   fig, axs = plt.subplots(1, 2, figsize=(12, 6))
                      
