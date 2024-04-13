@@ -129,7 +129,7 @@ class System: # System
 class Simulation: # Simulation
 
   # class constructor
-  def __init__(self, system:System, num_aps:int, num_sms:int):
+  def __init__(self, system:System, num_ues, num_aps:int, num_sms:int):
 
     assert isinstance(system, System) # system must be an instance of the class System
     assert (num_sms > 0) and (num_aps > 0) # Amount of simulations, aps and ues must be bigger than 0
@@ -138,7 +138,7 @@ class Simulation: # Simulation
 
     self.num_sms = num_sms # Amount of simulations
     self.num_aps = num_aps # Amount of APs
-    self.num_ues = list(range(1,101)) # Amount of UEs
+    self.num_ues = num_ues # Amount of UEs
 
     self.bt = (10**(8)) # Total available bandwidth ( 100MHz = 10^(8)Hz )
     self.ko = (10**(-20)) # Constant for the noise power ( 10^(-17)miliwatts/Hz = 10^(-20)watts/Hz )
@@ -195,50 +195,91 @@ class Simulation: # Simulation
           self.coords.append(ues[i].position_ue)
           break
 
+def load_results(file_path):
 
-def run_simulation(simulate: Simulation):
+  data = np.load(file_path)
+  return data['sinrs'], data['cdf_sinrs'], data['capacities'], data['cdf_capacities']
 
-  system.aps = [PointAcess((1000, 1000), 10) for _ in range(simulate.num_aps)]
-  system.ues = [UserEquipments() for _, _ in enumerate(simulate.num_ues)]
-  simulate.AP_position(system.aps)
-  sinrs_totallys = []
-  capacities_totallys = []
+def run_simulation(simulate: Simulation, save_file=None, load_file=None):
+
+  if load_file:
+        sinrs_sorted, cdf_sinrs, capacities_sorted, cdf_capacities = load_results(load_file)
+  else:
     
-  for _ in range(simulate.num_sms):
-    simulate.UE_position(system.ues)
-    for j, ap in enumerate(system.aps):
-      for i, ue in enumerate(system.ues):
-        if simulate.distance(ue, ap) == system.distance_min(ue, ap):
-          power = (ue.power * (simulate.k / (simulate.distance(ue, ap) ** (simulate.n)))) # Power in Watts
-          interference_ = 0
-          for k_, others_ues in enumerate(system.ues):
-            if ((others_ues.get_channel() == ue.get_channel()) and (others_ues != ue)):
-              interference_ += (((others_ues.power * (simulate.k / (simulate.distance(others_ues, ap) ** (simulate.n))))))  # interference totally
-              if interference_ > 0:
+    system.aps = [PointAcess((1000, 1000), 10) for _ in range(simulate.num_aps)]
+    system.ues = [UserEquipments() for _ in range(simulate.num_ues)]
+    simulate.AP_position(system.aps)
 
-                sinr = ((power / (interference_ + PointAcess.noise_power)))
-                sinr_db = 10 * log10(sinr)
-                capacity = ((simulate.bt / len(PointAcess.channel)) * (log2(1 + ((power / (interference_ + PointAcess.noise_power))))))  # Capacity in bps
-                capacities_totallys.append(capacity)
-                sinrs_totallys.append(sinr_db)
+    sinrs_totallys = []
+    capacities_totallys = []
+      
+    for _ in range(simulate.num_sms):
+      sinrs = []
+      capacities = []
+      simulate.UE_position(system.ues)
+      for j, ap in enumerate(system.aps):
+        for i, ue in enumerate(system.ues):
+          if simulate.distance(ue, ap) == system.distance_min(ue, ap):
+            power = (ue.power * (simulate.k / (simulate.distance(ue, ap) ** (simulate.n)))) # Power in Watts
+            interference_ = 0
+            for k_, others_ues in enumerate(system.ues):
+              if ((others_ues.get_channel() == ue.get_channel()) and (others_ues != ue)):
+                interference_ += (((others_ues.power * (simulate.k / (simulate.distance(others_ues, ap) ** (simulate.n))))))  # interference totally
+                if interference_ > 0:
+                  sinr = ((power / (interference_ + PointAcess.noise_power)))
+                  sinr_db = 10 * log10(sinr)
+                  capacity = ((simulate.bt / len(PointAcess.channel)) * (log2(1 + ((power / (interference_ + PointAcess.noise_power))))))  # Capacity in bps
+                  capacities.append(capacity)
+                  sinrs.append(sinr_db)
 
-  fig, axs = plt.subplots(1, 2, figsize=(12, 6))
-                     
-  sinrs_sorted = sorted(sinrs_totallys)
-  capacities_sorted = sorted(capacities_totallys)
-  cdf_sinrs = np.linspace(0, 1, len(sinrs_sorted))
-  cdf_capacities = np.linspace(0, 1, len(capacities_sorted))
+      sinrs_totallys.extend(sinrs)
+      capacities_totallys.extend(capacities)
+      sinrs_sorted = sorted(sinrs_totallys)
+      capacities_sorted = sorted(capacities_totallys)
+      cdf_sinrs = np.linspace(0, 1, len(sinrs_sorted))
+      cdf_capacities = np.linspace(0, 1, len(capacities_sorted))
 
-  axs[0].plot(sinrs_sorted, cdf_sinrs, label=f'{simulate.num_ues} UEs')
-  axs[1].plot(capacities_sorted, cdf_capacities, label=f'{simulate.num_ues} UEs')
+    if save_file:
 
-  axs[0].set_title('CDF of SINR')
-  axs[1].set_title('CDF of Capacity')     
-  plt.show()
+      np.savez(save_file, sinrs=sinrs_sorted, cdf_sinrs=cdf_sinrs, capacities=capacities_sorted, cdf_capacities=cdf_capacities)  
+    
+  return sinrs_sorted, cdf_sinrs, capacities_sorted, cdf_capacities
 
 if __name__ == "__main__":
+  
+  all_sinrs = []
+  all_cdf_sinrs = []
+  all_capacities = []
+  all_cdf_capacities = []
 
   system = System()
-  simulate = Simulation(system, 1, 1)
+  ues = list(range(1,11))
   
-  run_simulation(simulate)
+  for _, ue in enumerate(ues):
+
+    simulate = Simulation(system, ue, 10, 100)
+
+    run_simulation(simulate, save_file='results.npz')
+
+    sinrs, cdf_sinrs, capacities, cdf_capacities = run_simulation(simulate, load_file="results.npz")
+    all_sinrs.append(sinrs)
+    all_cdf_sinrs.append(cdf_sinrs)
+    all_capacities.append(capacities)
+    all_cdf_capacities.append(cdf_capacities)
+
+  fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+  
+  for i in range(len(ues)):
+      axs[0].plot(all_sinrs[i], all_cdf_sinrs[i], label=f'{ues[i]} UEs')
+      axs[1].plot(all_capacities[i], all_cdf_capacities[i], label=f'{ues[i]} UEs')
+
+  axs[0].set_title('CDF - SINR')
+  axs[0].grid(True)
+  axs[0].legend()
+
+  axs[1].set_title('CDF - Capacity')
+  axs[1].grid(True)
+  axs[1].legend()
+
+  plt.tight_layout()
+  plt.show()
