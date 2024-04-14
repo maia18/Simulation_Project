@@ -256,7 +256,6 @@ def run_simulation(simulate: Simulation, save_file=None, load_file=None):
     
   return sinrs_sorted, cdf_sinrs, capacities_sorted, cdf_capacities
 
-
 if __name__ == "__main__":
   
   all_sinrs = []
