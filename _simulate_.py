@@ -298,6 +298,7 @@ if __name__ == "__main__":
   # plt.tight_layout()
   # plt.show()
 
+  # ========================================== #
 
   # Test for quantify variables of APs
   # aps = [1, 4, 9, 16, 25, 36, 64] # Amount of APs
@@ -331,6 +332,7 @@ if __name__ == "__main__":
   # plt.tight_layout()
   # plt.show()
 
+  # ========================================== #
 
   # Test for quantify variables of Channels
 
