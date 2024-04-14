@@ -15,10 +15,6 @@ class PointAcess: # Point Acess
     self.__coveragearea = (coverage_area) # Coverage Area of AP
     self.__power = power_ # Power of AP
 
-    # self.channel = list(range(1,num_channels+1)) # Channels
-    # self.noise_power = ((((10**(-20))) * ((10**(8)) / len(self.channel)))) # Noise power
-
-
   # Get coverage area
   @property
   def coverage_area(self):
@@ -54,7 +50,6 @@ class PointAcess: # Point Acess
     self.__position = position_
     self.__coveragearea[self.__position[0]:self.__position[0] + 10, self.__position[1]:self.__position[1] + 10] = 1
     return self.__position
-
 
 class UserEquipments: # User Equipments
 
@@ -133,10 +128,11 @@ class System: # System
     distances_ue_ap_min = [sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2) for ap in self.__aps]
     return min(distances_ue_ap_min)
 
+
 class Simulation: # Simulation
 
   # class constructor
-  def __init__(self, system:System, num_ues, num_aps, num_sms:int, num_channels:list):
+  def __init__(self, system:System, num_ues, num_aps, num_sms:int):
 
     assert isinstance(system, System) # system must be an instance of the class System
     assert (num_sms > 0) and (num_aps > 0) # Amount of simulations, aps and ues must be bigger than 0
@@ -146,9 +142,7 @@ class Simulation: # Simulation
     self.num_sms = num_sms # Amount of simulations
     self.num_aps = num_aps # Amount of APs
     self.num_ues = num_ues # Amount of UEs
-    self.num_chs = num_channels # Amount of Channels
 
-    self.noise_power = ((((10**(-20))) * ((10**(8)) / len(self.num_chs)))) # Noise power
     self.bt = (10**(8)) # Total available bandwidth ( 100MHz = 10^(8)Hz )
     self.ko = (10**(-20)) # Constant for the noise power ( 10^(-17)miliwatts/Hz = 10^(-20)watts/Hz )
     self.do = 1 # fixed reference distance ( 1 meter )
@@ -158,18 +152,22 @@ class Simulation: # Simulation
 
   def distance(self, ue, ap):
 
-    if isinstance(ue, UserEquipments):
+    while True:
 
-      distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
-      if (distance_ue_ap >= self.do):
-        return distance_ue_ap
+      if isinstance(ue, UserEquipments):
 
-    if isinstance(ue, tuple):
+        distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
+        if (distance_ue_ap >= self.do):
+          return distance_ue_ap
+          break
 
-      distance_ue_ap = sqrt((ue[0] - ap.position_ap[0]) ** 2 + (ue[1] - ap.position_ap[1]) ** 2)
-      if (distance_ue_ap >= self.do):
-        return distance_ue_ap
-      
+      elif isinstance(ue, tuple):
+
+        distance_ue_ap = sqrt((ue[0] - ap.position_ap[0]) ** 2 + (ue[1] - ap.position_ap[1]) ** 2)
+        if (distance_ue_ap >= self.do):
+          return distance_ue_ap
+          break
+        
 
   def AP_position(self, aps: list[PointAcess]):
 
@@ -204,30 +202,40 @@ class Simulation: # Simulation
           self.coords.append(ues[i].position_ue)
           break
 
-
+# Load results pf the simulation previous
 def load_results(file_path):
 
   data = np.load(file_path)
   return data['sinrs'], data['cdf_sinrs'], data['capacities'], data['cdf_capacities']
 
-def run_simulation(simulate: Simulation, save_file=None, load_file=None):
 
+# Run Simulation
+def run_simulation(simulate: Simulation, channel=list(range(1,4)), save_file=None, load_file=None):
+
+  noise_power = ((((10**(-20))) * ((10**(8)) / len(channel)))) # Noise power
+
+  # Load results
   if load_file:
         sinrs_sorted, cdf_sinrs, capacities_sorted, cdf_capacities = load_results(load_file)
-  else:
-    
-    # ch = np.random.choice(simulate.num_chs)
-    system.aps = [PointAcess((1000, 1000), 10) for _ in range(simulate.num_aps)]
-    system.ues = [UserEquipments(np.random.choice(simulate.num_chs)) for _ in range(simulate.num_ues)]
-    simulate.AP_position(system.aps)
 
+  # Simulation unprecedented
+  else:
+
+    system.aps = [PointAcess((1000, 1000), 10) for _ in range(simulate.num_aps)] # APs
+    system.ues = [UserEquipments(np.random.choice(channel)) for _ in range(simulate.num_ues)] # UEs
+    simulate.AP_position(system.aps) # Position APs
+
+    # List of the results totallys
     sinrs_totallys = []
     capacities_totallys = []
-      
+
+    # Simulation  
     for _ in range(simulate.num_sms):
-      sinrs = []
-      capacities = []
-      simulate.UE_position(system.ues)
+
+      sinrs = [] # List of SINRS results
+      capacities = [] # List of CAPACITY results
+      simulate.UE_position(system.ues) # Position UEs
+
       for j, ap in enumerate(system.aps):
         for i, ue in enumerate(system.ues):
           if simulate.distance(ue, ap) == system.distance_min(ue, ap):
@@ -237,9 +245,9 @@ def run_simulation(simulate: Simulation, save_file=None, load_file=None):
               if ((others_ues.get_channel() == ue.get_channel()) and (others_ues != ue)):
                 interference_ += (((others_ues.power * (simulate.k / (simulate.distance(others_ues, ap) ** (4))))))  # interference totally
                 if interference_ > 0:
-                  sinr = ((power / (interference_ + simulate.noise_power)))
+                  sinr = ((power / (interference_ + noise_power)))
                   sinr_db = 10 * log10(sinr)
-                  capacity = ((simulate.bt / len(simulate.num_chs)) * (log2(1 + ((power / (interference_ + simulate.noise_power))))))  # Capacity in bps
+                  capacity = ((simulate.bt / len(channel)) * (log2(1 + ((power / (interference_ + noise_power))))))  # Capacity
                   capacities.append(capacity)
                   sinrs.append(sinr_db)
 
@@ -250,52 +258,57 @@ def run_simulation(simulate: Simulation, save_file=None, load_file=None):
       cdf_sinrs = np.linspace(0, 1, len(sinrs_sorted))
       cdf_capacities = np.linspace(0, 1, len(capacities_sorted))
 
+    # Save results
     if save_file:
 
       np.savez(save_file, sinrs=sinrs_sorted, cdf_sinrs=cdf_sinrs, capacities=capacities_sorted, cdf_capacities=cdf_capacities)  
-    
+  
+  # Return results
   return sinrs_sorted, cdf_sinrs, capacities_sorted, cdf_capacities
 
 if __name__ == "__main__":
   
-  all_sinrs = []
+  # All of results
+  all_sinrs = [] 
   all_cdf_sinrs = []
   all_capacities = []
   all_cdf_capacities = []
 
+  # Tests
+
   system = System()
 
   # Test for quantify variables of UEs
-  # ues = [16, 32, 100] # Amount of UEs
+  ues = [16, 32, 50, 100] # Amount of UEs
 
-  # for _, ue in enumerate(ues):
+  for _, ue in enumerate(ues):
 
-  #   simulate = Simulation(system, ue, 1, 100)
+    simulate = Simulation(system, ue, 1, 100)
 
-  #   run_simulation(simulate, save_file='results.npz')
+    run_simulation(simulate, save_file='results.npz')
 
-  #   sinrs, cdf_sinrs, capacities, cdf_capacities = run_simulation(simulate, load_file="results.npz")
-  #   all_sinrs.append(sinrs)
-  #   all_cdf_sinrs.append(cdf_sinrs)
-  #   all_capacities.append(capacities)
-  #   all_cdf_capacities.append(cdf_capacities)
+    sinrs, cdf_sinrs, capacities, cdf_capacities = run_simulation(simulate, load_file="results.npz")
+    all_sinrs.append(sinrs)
+    all_cdf_sinrs.append(cdf_sinrs)
+    all_capacities.append(capacities)
+    all_cdf_capacities.append(cdf_capacities)
 
-  # fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+  fig, axs = plt.subplots(1, 2, figsize=(12, 6))
   
-  # for i in range(len(ues)):
-  #     axs[0].plot(all_sinrs[i], all_cdf_sinrs[i], label=f'{ues[i]} UEs')
-  #     axs[1].plot(all_capacities[i], all_cdf_capacities[i], label=f'{ues[i]} UEs')
+  for i in range(len(ues)):
+      axs[0].plot(all_sinrs[i], all_cdf_sinrs[i], label=f'{ues[i]} UEs')
+      axs[1].plot(all_capacities[i], all_cdf_capacities[i], label=f'{ues[i]} UEs')
 
-  # axs[0].set_title('CDF - SINR')
-  # axs[0].grid(True)
-  # axs[0].legend()
+  axs[0].set_title('CDF - SINR')
+  axs[0].grid(True)
+  axs[0].legend()
 
-  # axs[1].set_title('CDF - Capacity')
-  # axs[1].grid(True)
-  # axs[1].legend()
+  axs[1].set_title('CDF - Capacity')
+  axs[1].grid(True)
+  axs[1].legend()
 
-  # plt.tight_layout()
-  # plt.show()
+  plt.tight_layout()
+  plt.show()
 
   # ========================================== #
 
@@ -334,7 +347,6 @@ if __name__ == "__main__":
   # ========================================== #
 
   # Test for quantify variables of Channels
-
   # min_channels = 1
   # max_channels = 5
 
@@ -357,6 +369,49 @@ if __name__ == "__main__":
   # for k in range(len(channel)):
   #   axs[0].plot(all_sinrs[k], all_cdf_sinrs[k], label=f'{channel[k]} Channels')
   #   axs[1].plot(all_capacities[k], all_cdf_capacities[k], label=f'{channel[k]} Channels')
+
+  # axs[0].set_title('CDF - SINR')
+  # axs[0].grid(True)
+  # axs[0].legend()
+
+  # axs[1].set_title('CDF - Capacity')
+  # axs[1].grid(True)
+  # axs[1].legend()
+
+  # plt.tight_layout()
+  # plt.show()
+
+  # ========================================== #
+
+  # Test for quantify variables of UEs, APs e Channels
+  # ues = [1, 4] # Amount of UEs
+  # aps = [4, 9] # Amount of APs
+  # min_channels = 1
+  # max_channels = 5
+
+  # for a, ue in enumerate(ues):
+
+  #   for b, ap in enumerate(aps):
+
+  #     for ch in range(min_channels, max_channels+1):
+        
+  #       channel = list(range(min_channels, max_channels+1)) # Channels  
+  #       simulate = Simulation(system, ue, ap, 100, channel)
+
+  #       run_simulation(simulate, save_file='results.npz')
+
+  #       sinrs, cdf_sinrs, capacities, cdf_capacities = run_simulation(simulate, load_file="results.npz")
+  #       all_sinrs.append(sinrs)
+  #       all_cdf_sinrs.append(cdf_sinrs)
+  #       all_capacities.append(capacities)
+  #       all_cdf_capacities.append(cdf_capacities)
+
+  # fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+  
+  # for i in range(len(ues)):
+  #     for j in range(len(aps)):
+  #       for k in range(len(channel)):
+  #           axs[i, j].plot(all_sinrs[i * len(aps) + j * len(channel) + k], all_cdf_sinrs[i * len(aps) + j * len(channel) + k], label=f'{i} UEs, {j} APs, {k} Channels')
 
   # axs[0].set_title('CDF - SINR')
   # axs[0].grid(True)
