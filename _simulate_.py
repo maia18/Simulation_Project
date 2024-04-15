@@ -3,9 +3,6 @@ import numpy as np;import matplotlib.pyplot as plt;from math import sqrt,log10,l
 
 class PointAcess: # Point Acess
 
-  # channel = list(range(1,4)) # Channels
-  # noise_power = ((((10**(-20))) * ((10**(8)) / len(channel)))) # Noise power
-
   # class constructor
   def __init__(self, coverage_area:tuple, power_):
 
@@ -28,7 +25,6 @@ class PointAcess: # Point Acess
     assert type(coverage_area_) == tuple and ( len(coverage_area_) >= 0 ) # New Coverage area must be an tuple with len positive
     self.__coveragearea = (coverage_area_) # New Coverage Area
 
-
   # Get power
   @property
   def power(self):
@@ -42,7 +38,6 @@ class PointAcess: # Point Acess
     assert not isinstance(power__, (str, bool, list, tuple)) and ( power__ >= 0 ) # Power must be an number positive
     self.__power = power__ # New Power
 
-
   def position_ap(self, position_:tuple): # Position - AP
 
     assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
@@ -50,6 +45,7 @@ class PointAcess: # Point Acess
     self.__position = position_
     self.__coveragearea[self.__position[0]:self.__position[0] + 10, self.__position[1]:self.__position[1] + 10] = 1
     return self.__position
+
 
 class UserEquipments: # User Equipments
 
@@ -74,18 +70,17 @@ class UserEquipments: # User Equipments
     assert not isinstance(power__, (str, bool, list, tuple)) and ( power__ >= 0 ) # Power must be an number positive
     self.__power = power__
 
-
   def position_ue(self, position_:tuple): # Position - UE
 
     assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
     self.__position = position_
     return self.__position
 
-
   # Get channel
   def get_channel(self):
 
     return self.__channel
+
 
 class System: # System
 
@@ -108,7 +103,6 @@ class System: # System
     assert isinstance(aps_, list) # AP must be an instance of the class PointAcess for be add on the list
     self.__aps.extend(aps_)
 
-
   # Get UE's
   @property
   def ues(self):
@@ -121,7 +115,6 @@ class System: # System
 
     assert isinstance(ues_, list) # UE must be an instance of the class UserEquipments for be add on the list
     self.__ues.extend(ues_)
-
 
   def distance_min(self, ue, ap):
 
@@ -152,7 +145,6 @@ class Simulation: # Simulation
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
 
-
   def distance(self, ue, ap):
 
     while True:
@@ -170,7 +162,6 @@ class Simulation: # Simulation
         if (distance_ue_ap >= self.do):
           return distance_ue_ap
           break
-        
 
   def AP_position(self, aps: list[PointAcess]):
 
@@ -188,7 +179,6 @@ class Simulation: # Simulation
             self.coords.append(aps[i].position_ap)
             break
 
-
   def UE_position(self, ues: list[UserEquipments]): # Position UE
 
     assert isinstance(ues, list) # ues must be an list of the PointAcess
@@ -205,13 +195,11 @@ class Simulation: # Simulation
           self.coords.append(ues[i].position_ue)
           break
 
-
   # Load results pf the simulation previous
   def load_results(self, file_path):
 
     data = np.load(file_path)
     return data['sinrs'], data['cdf_sinrs'], data['capacities'], data['cdf_capacities']
-
 
   # Run Simulation
   def run_simulation(self, save_file=None, load_file=None):
@@ -314,7 +302,7 @@ if __name__ == "__main__":
   # plt.tight_layout()
   # plt.show()
 
-  # ========================================== #
+  # ================================================================================================================== #
 
   # Test for quantify variables of APs
   # aps = [1, 4, 9, 16, 25, 36, 64] # Amount of APs
@@ -349,7 +337,7 @@ if __name__ == "__main__":
   # plt.tight_layout()
   # plt.show()
 
-  # ========================================== #
+  # ================================================================================================================== #
 
   # Test for quantify variables of Channels
 #   min_channels = 1
@@ -391,47 +379,47 @@ if __name__ == "__main__":
 # plt.tight_layout()
 # plt.show()
 
-  # ========================================== #
+  # ================================================================================================================== #
 
  # Test for quantify variables of UEs, APs e Channels
-  min_channels = 1
-  max_channels = 5
-  tests = list(range(min_channels, (max_channels+1))) # Amount of tests with quantify variables of channels
-  aps = [1, 4] # Amount of APs
-  ues = [4, 9] # Amount of UEs
-  test_list = []
+#   min_channels = 1
+#   max_channels = 5
+#   tests = list(range(min_channels, (max_channels+1))) # Amount of tests with quantify variables of channels
+#   aps = [1, 4] # Amount of APs
+#   ues = [4, 9] # Amount of UEs
+#   test_list = []
 
-  fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+#   fig, axs = plt.subplots(1, 2, figsize=(12, 6))
 
-  for _, i in enumerate(tests):
+#   for _, i in enumerate(tests):
     
-    channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1))
+#     channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1))
 
-    if channels_ not in test_list:
-      test_list.append(channels_)
+#     if channels_ not in test_list:
+#       test_list.append(channels_)
 
-      for ue in ues:
+#       for ue in ues:
         
-        for ap in aps:
+#         for ap in aps:
 
-          simulate = Simulation(system, ue, ap, 100, channels_)
-          simulate.run_simulation(save_file='results.npz')
+#           simulate = Simulation(system, ue, ap, 100, channels_)
+#           simulate.run_simulation(save_file='results.npz')
 
-          sinrs, cdf_sinrs, capacities, cdf_capacities = simulate.run_simulation(load_file="results.npz")
-          all_sinrs.append(sinrs)
-          all_cdf_sinrs.append(cdf_sinrs)
-          all_capacities.append(capacities)
-          all_cdf_capacities.append(cdf_capacities)
+#           sinrs, cdf_sinrs, capacities, cdf_capacities = simulate.run_simulation(load_file="results.npz")
+#           all_sinrs.append(sinrs)
+#           all_cdf_sinrs.append(cdf_sinrs)
+#           all_capacities.append(capacities)
+#           all_cdf_capacities.append(cdf_capacities)
 
-          axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{ue} UEs, {ap} APs, {len(test_list[-1])} Channels')
-          axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{ue} UEs, {ap} APs, {len(test_list[-1])} Channels') 
+#           axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{ue} UEs, {ap} APs, {len(test_list[-1])} Channels')
+#           axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{ue} UEs, {ap} APs, {len(test_list[-1])} Channels') 
 
-axs[0].set_title('CDF - SINR')
-axs[0].grid(True)
-axs[0].legend(fontsize=5)
+# axs[0].set_title('CDF - SINR')
+# axs[0].grid(True)
+# axs[0].legend(fontsize=5)
 
-axs[1].set_title('CDF - Capacity')
-axs[1].grid(True)
-axs[1].legend(fontsize=5)
+# axs[1].set_title('CDF - Capacity')
+# axs[1].grid(True)
+# axs[1].legend(fontsize=5)
 
-plt.show() 
+# plt.show() 
