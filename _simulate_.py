@@ -259,7 +259,7 @@ class Simulation: # Simulation
 
 if __name__ == "__main__":
   
-  # All of results
+  # results
   all_sinrs = [] 
   all_cdf_sinrs = []
   all_capacities = []
