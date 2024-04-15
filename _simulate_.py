@@ -306,7 +306,7 @@ if __name__ == "__main__":
 
   # Test for quantify variables of APs
   # aps = [1, 4, 9, 16, 25, 36, 64] # Amount of APs
-  # fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+  # fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
 
   # for _, ap in enumerate(aps):
 
@@ -345,7 +345,7 @@ if __name__ == "__main__":
 #   tests = list(range(min_channels, (max_channels+1))) # Amount of tests with quantify variables of channels
 #   test_list = []
 
-#   fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+#   fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
 
 #   for _, i in enumerate(tests):
     
@@ -389,7 +389,7 @@ if __name__ == "__main__":
 #   ues = [4, 9] # Amount of UEs
 #   test_list = []
 
-#   fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+#   fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
 
 #   for _, i in enumerate(tests):
     
