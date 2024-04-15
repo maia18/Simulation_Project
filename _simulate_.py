@@ -283,6 +283,7 @@ if __name__ == "__main__":
 
   # Test for quantify variables of UEs
   # ues = [16, 32] # Amount of UEs
+  # fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
 
   # for _, ue in enumerate(ues):
 
@@ -295,8 +296,6 @@ if __name__ == "__main__":
   #   all_cdf_sinrs.append(cdf_sinrs)
   #   all_capacities.append(capacities)
   #   all_cdf_capacities.append(cdf_capacities)
-
-  # fig, axs = plt.subplots(1, 2, figsize=(12, 6))
   
   # for i in range(len(ues)):
   #     axs[0].plot(all_sinrs[i], all_cdf_sinrs[i], label=f'{ues[i]} UEs')
@@ -319,6 +318,7 @@ if __name__ == "__main__":
 
   # Test for quantify variables of APs
   # aps = [1, 4, 9, 16, 25, 36, 64] # Amount of APs
+  # fig, axs = plt.subplots(1, 2, figsize=(12, 6))
 
   # for _, ap in enumerate(aps):
 
@@ -331,8 +331,6 @@ if __name__ == "__main__":
   #   all_cdf_sinrs.append(cdf_sinrs)
   #   all_capacities.append(capacities)
   #   all_cdf_capacities.append(cdf_capacities)
-
-  # fig, axs = plt.subplots(1, 2, figsize=(12, 6))
   
   # for j in range(len(aps)):
   #     axs[0].plot(all_sinrs[j], all_cdf_sinrs[j], label=f'{aps[j]} APs')
@@ -354,41 +352,44 @@ if __name__ == "__main__":
   # ========================================== #
 
   # Test for quantify variables of Channels
-  # min_channels = 1
-  # max_channels = 3
+#   min_channels = 1
+#   max_channels = 5
+#   tests = list(range(min_channels, (max_channels+1))) # Amount of tests with quantify variables of channels
+#   test_list = []
 
-  # fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+#   fig, axs = plt.subplots(1, 2, figsize=(12, 6))
 
-  # for ch in range(min_channels, max_channels+1):
+#   for _, i in enumerate(tests):
+    
+#     channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1))
 
-  #   channel = list(range(min_channels, max_channels+1)) # Channels
+#     if test_list.__contains__(channels_) == False:
+#       test_list.append(channels_)
+    
+#       simulate = Simulation(system, 10, 1, 100, channels_)
+#       simulate.run_simulation(save_file='results.npz')
 
-  #   simulate = Simulation(system, 10, 1, 100, channel)
+#       sinrs, cdf_sinrs, capacities, cdf_capacities = simulate.run_simulation(load_file="results.npz")
+#       all_sinrs.append(sinrs)
+#       all_cdf_sinrs.append(cdf_sinrs)
+#       all_capacities.append(capacities)
+#       all_cdf_capacities.append(cdf_capacities)
 
-  #   simulate.run_simulation(save_file='results.npz')
+#       axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{len(test_list[-1])} Channels')   
+#       axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{len(test_list[-1])} Channels')   
 
-  #   sinrs, cdf_sinrs, capacities, cdf_capacities = simulate.run_simulation(load_file="results.npz")
-  #   all_sinrs.append(sinrs)
-  #   all_cdf_sinrs.append(cdf_sinrs)
-  #   all_capacities.append(capacities)
-  #   all_cdf_capacities.append(cdf_capacities)
-  
-  # for k in range(len(channel)):
-  #   axs[0].plot(all_sinrs[k], all_cdf_sinrs[k], label=f'{channel[k]} Channels')
-  #   axs[1].plot(all_capacities[k], all_cdf_capacities[k], label=f'{channel[k]} Channels')
+# axs[0].set_title('CDF - SINR')
+# axs[0].set_title(f'APs: {simulate.num_aps}, UEs: {simulate.num_ues}', loc='right', fontsize=9)
+# axs[0].grid(True)
+# axs[0].legend()
 
-  # axs[0].set_title('CDF - SINR')
-  # axs[0].set_title(f'APs: {simulate.num_aps}, UEs: {simulate.num_ues}', loc='right', fontsize=9)
-  # axs[0].grid(True)
-  # axs[0].legend()
+# axs[1].set_title('CDF - Capacity')
+# axs[1].set_title(f'APs: {simulate.num_aps}, UEs: {simulate.num_ues}', loc='right', fontsize=9)
+# axs[1].grid(True)
+# axs[1].legend()
 
-  # axs[1].set_title('CDF - Capacity')
-  # axs[1].set_title(f'APs: {simulate.num_aps}, UEs: {simulate.num_ues}', loc='right', fontsize=9)
-  # axs[1].grid(True)
-  # axs[1].legend()
-
-  # plt.tight_layout()
-  # plt.show()
+# plt.tight_layout()
+# plt.show()
 
   # ========================================== #
 
@@ -399,7 +400,7 @@ if __name__ == "__main__":
 
   # fig, axs = plt.subplots(1, 2, figsize=(12, 6))
 
-  # for a, ue in enumerate(ues):
+  # for a, ue in enumerate(ues):,
   #   for b, ap in enumerate(aps):
   #     for ch_ in range(len(ch)):
         
