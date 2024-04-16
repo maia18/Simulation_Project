@@ -129,7 +129,7 @@ class Simulation: # Simulation
 
     assert isinstance(system, System) # system must be an instance of the class System
     assert (num_sms > 0) and (num_aps > 0) # Amount of simulations, aps and ues must be bigger than 0
-    assert isinstance(channels, list)  # Channel must an list
+    # assert isinstance(channels, list)  # Channel must an list
     self.system = system
     self.coords = [] # Coordinates ocupeds
 
@@ -383,10 +383,10 @@ if __name__ == "__main__":
 
  # Test for quantify variables of UEs, APs e Channels
   min_channels = 1
-  max_channels = 2
+  max_channels = 3
   tests = list(range(min_channels, (max_channels+1))) # Amount of tests with quantify variables of channels
-  aps = [9, 16] # Amount of APs
-  ues = [6, 10] # Amount of UEs
+  aps = [9, 25] # Amount of APs
+  ues = [6, 15] # Amount of UEs
   test_list = []
 
   fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
@@ -398,10 +398,10 @@ if __name__ == "__main__":
     if channels_ not in test_list:
       test_list.append(channels_)
 
-      for ue in ues:
+      for __, ue in enumerate(ues):
         
-        for ap in aps:
-
+        for ___, ap in enumerate(aps):
+          
           simulate = Simulation(system, ue, ap, 100, channels_)
           simulate.run_simulation(save_file='results.npz')
 
@@ -411,15 +411,15 @@ if __name__ == "__main__":
           all_capacities.append(capacities)
           all_cdf_capacities.append(cdf_capacities)
 
-          axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{ue} UEs, {ap} APs, {len(test_list[-1])} Channels')
-          axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{ue} UEs, {ap} APs, {len(test_list[-1])} Channels') 
+          axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{ues[__]} UEs, {aps[___]} APs, {len(test_list[_])} Channels')
+          axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{ues[__]} UEs, {aps[___]} APs, {len(test_list[_])} Channels') 
 
 axs[0].set_title('CDF - SINR')
 axs[0].grid(True)
-axs[0].legend(fontsize=5)
+axs[0].legend(fontsize=6.5)
 
 axs[1].set_title('CDF - Capacity')
 axs[1].grid(True)
-axs[1].legend(fontsize=5)
+axs[1].legend(fontsize=6.5)
 
 plt.show() 
