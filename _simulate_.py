@@ -129,7 +129,7 @@ class Simulation: # Simulation
 
     assert isinstance(system, System) # system must be an instance of the class System
     assert (num_sms > 0) and (num_aps > 0) # Amount of simulations, aps and ues must be bigger than 0
-    assert isinstance(channels, list) and len(channels) > 0 # Channel must an list
+    assert isinstance(channels, list)  # Channel must an list
     self.system = system
     self.coords = [] # Coordinates ocupeds
 
@@ -270,7 +270,7 @@ if __name__ == "__main__":
   system = System()
 
   # Test for quantify variables of UEs
-  # ues = [16, 32] # Amount of UEs
+  # ues = [50, 100] # Amount of UEs
   # fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
 
   # for _, ue in enumerate(ues):
@@ -341,7 +341,7 @@ if __name__ == "__main__":
 
   # Test for quantify variables of Channels
 #   min_channels = 1
-#   max_channels = 5
+#   max_channels = 2
 #   tests = list(range(min_channels, (max_channels+1))) # Amount of tests with quantify variables of channels
 #   test_list = []
 
@@ -351,7 +351,7 @@ if __name__ == "__main__":
     
 #     channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1))
 
-#     if test_list.__contains__(channels_) == False:
+#     if channels_ not in test_list:
 #       test_list.append(channels_)
     
 #       simulate = Simulation(system, 10, 1, 100, channels_)
@@ -382,44 +382,44 @@ if __name__ == "__main__":
   # ================================================================================================================== #
 
  # Test for quantify variables of UEs, APs e Channels
-#   min_channels = 1
-#   max_channels = 5
-#   tests = list(range(min_channels, (max_channels+1))) # Amount of tests with quantify variables of channels
-#   aps = [1, 4] # Amount of APs
-#   ues = [4, 9] # Amount of UEs
-#   test_list = []
+  min_channels = 1
+  max_channels = 2
+  tests = list(range(min_channels, (max_channels+1))) # Amount of tests with quantify variables of channels
+  aps = [9, 16] # Amount of APs
+  ues = [6, 10] # Amount of UEs
+  test_list = []
 
-#   fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
+  fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
 
-#   for _, i in enumerate(tests):
+  for _, i in enumerate(tests):
     
-#     channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1))
+    channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1))
 
-#     if channels_ not in test_list:
-#       test_list.append(channels_)
+    if channels_ not in test_list:
+      test_list.append(channels_)
 
-#       for ue in ues:
+      for ue in ues:
         
-#         for ap in aps:
+        for ap in aps:
 
-#           simulate = Simulation(system, ue, ap, 100, channels_)
-#           simulate.run_simulation(save_file='results.npz')
+          simulate = Simulation(system, ue, ap, 100, channels_)
+          simulate.run_simulation(save_file='results.npz')
 
-#           sinrs, cdf_sinrs, capacities, cdf_capacities = simulate.run_simulation(load_file="results.npz")
-#           all_sinrs.append(sinrs)
-#           all_cdf_sinrs.append(cdf_sinrs)
-#           all_capacities.append(capacities)
-#           all_cdf_capacities.append(cdf_capacities)
+          sinrs, cdf_sinrs, capacities, cdf_capacities = simulate.run_simulation(load_file="results.npz")
+          all_sinrs.append(sinrs)
+          all_cdf_sinrs.append(cdf_sinrs)
+          all_capacities.append(capacities)
+          all_cdf_capacities.append(cdf_capacities)
 
-#           axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{ue} UEs, {ap} APs, {len(test_list[-1])} Channels')
-#           axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{ue} UEs, {ap} APs, {len(test_list[-1])} Channels') 
+          axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{ue} UEs, {ap} APs, {len(test_list[-1])} Channels')
+          axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{ue} UEs, {ap} APs, {len(test_list[-1])} Channels') 
 
-# axs[0].set_title('CDF - SINR')
-# axs[0].grid(True)
-# axs[0].legend(fontsize=5)
+axs[0].set_title('CDF - SINR')
+axs[0].grid(True)
+axs[0].legend(fontsize=5)
 
-# axs[1].set_title('CDF - Capacity')
-# axs[1].grid(True)
-# axs[1].legend(fontsize=5)
+axs[1].set_title('CDF - Capacity')
+axs[1].grid(True)
+axs[1].legend(fontsize=5)
 
-# plt.show() 
+plt.show() 
