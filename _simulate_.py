@@ -1,5 +1,5 @@
 # Simulation Monte Carlo - Cellular Wireless Communication Systems
-import numpy as np;import matplotlib.pyplot as plt;from math import sqrt,log10,log2,ceil;
+import numpy as np;import matplotlib.pyplot as plt;from math import sqrt,log10,log2,ceil;import itertools;import random
 
 class PointAcess: # Point Acess
 
@@ -341,30 +341,35 @@ if __name__ == "__main__":
 
   # Test for quantify variables of Channels
 #   min_channels = 1
-#   max_channels = 2
-#   tests = list(range(min_channels, (max_channels+1))) # Amount of tests with quantify variables of channels
-#   test_list = []
+#   max_channels = 4
+
+#   channels = []
 
 #   fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
 
-#   for _, i in enumerate(tests):
-    
+#   while True:
+
 #     channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1))
+#     if len(channels_) not in [[a] for a in channels] and channels_ not in channels:
+#       channels.append(channels_)
+#       if len(channels) == max_channels:
+#         break
 
-#     if channels_ not in test_list:
-#       test_list.append(channels_)
+#   random.shuffle(channels)
+
+#   for _, i in enumerate(channels):
     
-#       simulate = Simulation(system, 10, 1, 100, channels_)
-#       simulate.run_simulation(save_file='results.npz')
+#     simulate = Simulation(system, 10, 1, 100, channels[_])
+#     simulate.run_simulation(save_file='results.npz')
 
-#       sinrs, cdf_sinrs, capacities, cdf_capacities = simulate.run_simulation(load_file="results.npz")
-#       all_sinrs.append(sinrs)
-#       all_cdf_sinrs.append(cdf_sinrs)
-#       all_capacities.append(capacities)
-#       all_cdf_capacities.append(cdf_capacities)
+#     sinrs, cdf_sinrs, capacities, cdf_capacities = simulate.run_simulation(load_file="results.npz")
+#     all_sinrs.append(sinrs)
+#     all_cdf_sinrs.append(cdf_sinrs)
+#     all_capacities.append(capacities)
+#     all_cdf_capacities.append(cdf_capacities)
 
-#       axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{len(test_list[-1])} Channels')   
-#       axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{len(test_list[-1])} Channels')   
+#     axs[0].plot(all_sinrs[_], all_cdf_sinrs[_], label=f'{len(channels[_])} Channels')   
+#     axs[1].plot(all_capacities[_], all_cdf_capacities[_], label=f'{len(channels[_])} Channels')   
 
 # axs[0].set_title('CDF - SINR')
 # axs[0].set_title(f'APs: {simulate.num_aps}, UEs: {simulate.num_ues}', loc='right', fontsize=9)
@@ -384,35 +389,40 @@ if __name__ == "__main__":
  # Test for quantify variables of UEs, APs e Channels
   min_channels = 1
   max_channels = 3
-  tests = list(range(min_channels, (max_channels+1))) # Amount of tests with quantify variables of channels
+
   aps = [9, 25] # Amount of APs
   ues = [6, 15] # Amount of UEs
-  test_list = []
 
   fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
+  channels = []
 
-  for _, i in enumerate(tests):
-    
+  while True:
+
     channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1))
+    if len(channels_) not in [[a] for a in channels] and channels_ not in channels:
+      channels.append(channels_)
+      if len(channels) == max_channels:
+        break
 
-    if channels_ not in test_list:
-      test_list.append(channels_)
+  random.shuffle(channels)
 
-      for __, ue in enumerate(ues):
+  for _, i in enumerate(channels):
+
+    for __, ue in enumerate(ues):
+      
+      for ___, ap in enumerate(aps):
         
-        for ___, ap in enumerate(aps):
-          
-          simulate = Simulation(system, ue, ap, 100, channels_)
-          simulate.run_simulation(save_file='results.npz')
+        simulate = Simulation(system, ues[__], aps[___], 100, channels[_])
+        simulate.run_simulation(save_file='results.npz')
 
-          sinrs, cdf_sinrs, capacities, cdf_capacities = simulate.run_simulation(load_file="results.npz")
-          all_sinrs.append(sinrs)
-          all_cdf_sinrs.append(cdf_sinrs)
-          all_capacities.append(capacities)
-          all_cdf_capacities.append(cdf_capacities)
+        sinrs, cdf_sinrs, capacities, cdf_capacities = simulate.run_simulation(load_file="results.npz")
+        all_sinrs.append(sinrs)
+        all_cdf_sinrs.append(cdf_sinrs)
+        all_capacities.append(capacities)
+        all_cdf_capacities.append(cdf_capacities)
 
-          axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{ues[__]} UEs, {aps[___]} APs, {len(test_list[_])} Channels')
-          axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{ues[__]} UEs, {aps[___]} APs, {len(test_list[_])} Channels') 
+        axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{ues[__]} UEs, {aps[___]} APs, {len(channels[_])} Channels')
+        axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{ues[__]} UEs, {aps[___]} APs, {len(channels[_])} Channels') 
 
 axs[0].set_title('CDF - SINR')
 axs[0].grid(True)
