@@ -1,41 +1,34 @@
 # Simulation Monte Carlo - Cellular Wireless Communication Systems
-import numpy as np;import matplotlib.pyplot as plt;from math import sqrt,log10,log2,ceil;import itertools;import random
+import numpy as np; import matplotlib.pyplot as plt; from math import sqrt,log10,log2,ceil; import itertools; import random
 
 class PointAcess: # Point Acess
 
-  # class constructor
   def __init__(self, coverage_area:tuple, power_):
 
     assert not isinstance(power_, (str, bool, list, tuple)) and ( power_ >= 0 ) # Power must be an number positive
     assert (type(coverage_area) == tuple) and ( len(coverage_area) >= 0 ) # Coverage area must be an tuple with len positive
-
     self.__coveragearea = (coverage_area) # Coverage Area of AP
     self.__power = power_ # Power of AP
 
   @property
   def coverage_area(self): # Get coverage area
-
     return self.__coveragearea
 
   @coverage_area.setter
   def coverage_area(self, coverage_area_:tuple): # Set coverage area
-
     assert type(coverage_area_) == tuple and ( len(coverage_area_) >= 0 ) # New Coverage area must be an tuple with len positive
     self.__coveragearea = (coverage_area_) # New Coverage Area
 
   @property
   def power(self): # Get power
-
     return self.__power
 
   @power.setter
   def power(self, power__): # Set power
-
     assert not isinstance(power__, (str, bool, list, tuple)) and ( power__ >= 0 ) # Power must be an number positive
     self.__power = power__ # New Power
 
   def position_ap(self, position_:tuple): # Position - AP
-
     assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
     assert (0 <= position_[0] <= self.coverage_area[0]) and (0 <= position_[1] <= self.coverage_area[1])
     self.__position = position_
@@ -45,39 +38,32 @@ class PointAcess: # Point Acess
 
 class UserEquipments: # User Equipments
 
-  # class constructor
   def __init__(self, channel, power_=1):
 
     assert not isinstance(power_, (str, bool, list, tuple)) and ( power_ >= 0 ) # Power must be an number positive
-
     self.__channel = channel # Channel
     self.__power = power_ # Power
 
   @property
   def power(self): # Get power
-
     return self.__power
 
   @power.setter
   def power(self, power__): # Set power
-
     assert not isinstance(power__, (str, bool, list, tuple)) and ( power__ >= 0 ) # Power must be an number positive
     self.__power = power__
 
   def position_ue(self, position_:tuple): # Position - UE
-
     assert isinstance(position_, tuple) and ( len(position_) >= 0 ) # Position must be an tuple with len postive
     self.__position = position_
     return self.__position
 
   def get_channel(self): # Get channel
-
     return self.__channel
 
 
 class System: # System
 
-  # class constructor
   def __init__(self):
 
     self.__aps = list()  # Point Acess
@@ -85,35 +71,29 @@ class System: # System
 
   @property
   def aps(self): # Get AP's
-
     return self.__aps
   
   @aps.setter
   def aps(self, aps_: list[PointAcess]): # Set AP's
-
     assert isinstance(aps_, list) # AP must be an instance of the class PointAcess for be add on the list
     self.__aps.extend(aps_)
 
   @property
   def ues(self): # Get UE's
-
     return self.__ues
 
   @ues.setter
   def ues(self, ues_: list[UserEquipments]): # Set UE's
-
     assert isinstance(ues_, list) # UE must be an instance of the class UserEquipments for be add on the list
     self.__ues.extend(ues_)
 
   def distance_min(self, ue, ap): # Distance min
-
     distances_ue_ap_min = [sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2) for ap in self.__aps]
     return min(distances_ue_ap_min)
 
 
 class Simulation: # Simulation
 
-  # class constructor
   def __init__(self, system:System, num_ues, num_aps, num_sms:int, channels=list(range(1,4))):
 
     assert isinstance(system, System) # system must be an instance of the class System
@@ -135,33 +115,23 @@ class Simulation: # Simulation
   def distance(self, ue, ap): # Distance UE-AP
 
     while True:
-
       if isinstance(ue, UserEquipments):
-
         distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
         if (distance_ue_ap >= self.do):
-          return distance_ue_ap
-          break
-
+          return distance_ue_ap ; break
+        
       elif isinstance(ue, tuple):
-
         distance_ue_ap = sqrt((ue[0] - ap.position_ap[0]) ** 2 + (ue[1] - ap.position_ap[1]) ** 2)
         if (distance_ue_ap >= self.do):
-          return distance_ue_ap
-          break
+          return distance_ue_ap ; break
 
   def AP_position(self, aps: list[PointAcess]): # Position AP
 
     assert (len(aps) > 0) and isinstance(aps, list) # Amount of APs must be bigger than zero
-
     for i in range(len(aps)):
-
         while True:
-
           pos_ap = (((i%int(sqrt(len(aps)))) + 0.5) * 1000 / (int(sqrt(len(aps)))), ((i//int(sqrt(len(aps)))) + 0.5) * 1000 / ceil(len(aps) / int(sqrt(len(aps)))))
-
           if self.coords.__contains__(pos_ap) == False:
-
             aps[i].position_ap = pos_ap
             self.coords.append(aps[i].position_ap)
             break
@@ -169,15 +139,10 @@ class Simulation: # Simulation
   def UE_position(self, ues: list[UserEquipments]): # Position UE
 
     assert isinstance(ues, list) # ues must be an list of the PointAcess
-
     for i in range(len(ues)):
-
       while True:
-
         pos_ue = (np.random.randint(0, 1000), np.random.randint(0, 1000))
-
         if (self.coords.__contains__(pos_ue) == False):
-
           ues[i].position_ue = pos_ue
           self.coords.append(ues[i].position_ue)
           break
@@ -190,13 +155,11 @@ class Simulation: # Simulation
   def run_simulation(self, save_file=None, load_file=None): # Run Simulation
 
     if load_file: # Load results
-          sinrs_sorted, cdf_sinrs, capacities_sorted, cdf_capacities = self.load_results(load_file)
+      sinrs_sorted, cdf_sinrs, capacities_sorted, cdf_capacities = self.load_results(load_file)
 
     else: # Simulation unprecedented
-
       system.aps = [PointAcess((1000, 1000), 10) for i in range(self.num_aps)] # APs
       system.ues = [UserEquipments(np.random.choice(self.channels)) for j in range(self.num_ues)] # UEs'
-
       self.AP_position(system.aps) # Position APs
 
       # List of the results totallys
@@ -205,7 +168,6 @@ class Simulation: # Simulation
 
       # Simulation  
       for _ in range(self.num_sms):
-
         sinrs = [] # List of SINRS results
         capacities = [] # List of CAPACITY results
         self.UE_position(system.ues) # Position UEs
@@ -233,27 +195,25 @@ class Simulation: # Simulation
         cdf_capacities = np.linspace(0, 1, len(capacities_sorted))
 
       if save_file: # Save results
-
-        np.savez(save_file, sinrs=sinrs_sorted, cdf_sinrs=cdf_sinrs, capacities=capacities_sorted, cdf_capacities=cdf_capacities)  
-    
+        np.savez(save_file, sinrs=sinrs_sorted, cdf_sinrs=cdf_sinrs, capacities=capacities_sorted, cdf_capacities=cdf_capacities)
     return sinrs_sorted, cdf_sinrs, capacities_sorted, cdf_capacities # Return results
 
 
 if __name__ == "__main__":
+
+  system = System() # System with ues, aps
   
   all_sinrs = [] # All SINRs
   all_cdf_sinrs = [] # All CDF of SINRS
   all_capacities = [] # All CAPACITIES
   all_cdf_capacities = [] # All CDF of CAPACITIES
 
-  system = System() # System with ues, aps
-
   min_channels = 1 # Quantify min of channels
-  max_channels = 2 # Quantify max of channels
-
-  aps = [36, 49] # Amount of APs
-  ues = [4, 8] # Amount of UEs
+  max_channels = 3 # Quantify max of channels
   channels = list() # Amount of channels
+
+  aps = [25, 36] # Amount of APs
+  ues = [4, 8] # Amount of UEs
 
   fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
 
@@ -263,17 +223,17 @@ if __name__ == "__main__":
         channels.append(channels_)
         if len(channels) == max_channels:
           break
+
   combinations_ues_aps_chs = list(itertools.product(ues, aps, channels)) # combinations ues-aps-channels
   comb = [] # List of combinations
 
   # Tests
-
   for _ in range(1, len(aps)+len(ues)+(len(channels)-1)):
-    print(f'Test {_}')
-    ue, ap, ch = random.choice(combinations_ues_aps_chs) # Choose ue, ap and channel of list of the combinations ues-aps-channels
+    ue, ap, ch = random.choice(combinations_ues_aps_chs) # Choose ue, ap and channel of list - combinations ues-aps-channels.
     combs = [ue, ap, ch]
     if combs not in comb: # Avoid sames combinations
       comb.append(combs) # Update list of combinations ues-aps-channels
+      print(f'Test {_} - {combs}')
 
       simulate = Simulation(system, ue, ap, 100, ch)
       simulate.run_simulation(save_file='results.npz')
