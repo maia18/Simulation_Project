@@ -241,16 +241,15 @@ class Simulation: # Simulation
 
 if __name__ == "__main__":
   
-  # All Results
-  all_sinrs = [] 
-  all_cdf_sinrs = []
-  all_capacities = []
-  all_cdf_capacities = []
+  all_sinrs = [] # All SINRs
+  all_cdf_sinrs = [] # All CDF of SINRS
+  all_capacities = [] # All CAPACITIES
+  all_cdf_capacities = [] # All CDF of CAPACITIES
 
-  system = System()
+  system = System() # System with ues, aps
 
-  min_channels = 1
-  max_channels = 3
+  min_channels = 1 # Quantify min of channels
+  max_channels = 3 # Quantify max of channels
 
   aps = [36, 49, 64] # Amount of APs
   ues = [12, 16] # Amount of UEs
