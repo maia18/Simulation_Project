@@ -128,7 +128,7 @@ class Simulation: # Simulation
   def __init__(self, system:System, num_ues, num_aps, num_sms:int, channels=list(range(1,4))):
 
     assert isinstance(system, System) # system must be an instance of the class System
-    assert (num_sms > 0) and (num_aps > 0) # Amount of simulations, aps and ues must be bigger than 0
+    # assert (num_sms > 0) and (num_aps > 0) # Amount of simulations, aps and ues must be bigger than 0
     # assert isinstance(channels, list)  # Channel must an list
     self.system = system
     self.coords = [] # Coordinates ocupeds
@@ -144,6 +144,10 @@ class Simulation: # Simulation
     self.do = 1 # fixed reference distance ( 1 meter )
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
+
+  def get_sms(self):
+
+    return self.num_sms
 
   def distance(self, ue, ap):
 
@@ -211,8 +215,10 @@ class Simulation: # Simulation
     # Simulation unprecedented
     else:
 
-      system.aps = [PointAcess((1000, 1000), 10) for _ in range(self.num_aps)] # APs
-      system.ues = [UserEquipments(np.random.choice(self.channels)) for _ in range(self.num_ues)] # UEs
+      system.aps = [PointAcess((1000, 1000), 10) for i in range(self.num_aps)] # APs
+      system.ues = [UserEquipments(np.random.choice(self.channels)) for j in range(self.num_ues)] # UEs'
+      # system.aps = [PointAcess((1000, 1000), 10) for _, i in enumerate(self.num_aps)] # APs
+      # system.ues = [UserEquipments(np.random.choice(self.channels)) for __, j in enumerate(self.num_ues)] # UEs
       self.AP_position(system.aps) # Position APs
 
       # List of the results totallys
@@ -387,16 +393,16 @@ if __name__ == "__main__":
   # ================================================================================================================== #
 
  # Test for quantify variables of UEs, APs e Channels
-  min_channels = 1
-  max_channels = 3
+min_channels = 1
+max_channels = 3
 
-  aps = [9, 25] # Amount of APs
-  ues = [6, 15] # Amount of UEs
+aps = [16, 25]
+ues = [8, 10, 15]
+channels = []
 
-  fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
-  channels = []
+fig, axs = plt.subplots(1, 2, figsize=(12, 6))
 
-  while True:
+while True:
 
     channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1))
     if len(channels_) not in [[a] for a in channels] and channels_ not in channels:
@@ -404,32 +410,32 @@ if __name__ == "__main__":
       if len(channels) == max_channels:
         break
 
-  random.shuffle(channels)
+combinations_ues_aps_chs = list(itertools.product(ues, aps, channels))
+comb = []
+for _ in range(len(combinations_ues_aps_chs)):
+  ue, ap, ch = random.choice(combinations_ues_aps_chs)
+  if ue not in comb and ap not in comb:
+    comb.append(ue)
+    comb.append(ap)
 
-  for _, i in enumerate(channels):
-
-    for __, ue in enumerate(ues):
+    simulate = Simulation(system, ue, ap, 100, ch)
+    simulate.run_simulation(save_file='results.npz')
+    sinrs, cdf_sinrs, capacities, cdf_capacities = simulate.run_simulation(load_file="results.npz")
       
-      for ___, ap in enumerate(aps):
-        
-        simulate = Simulation(system, ues[__], aps[___], 100, channels[_])
-        simulate.run_simulation(save_file='results.npz')
-
-        sinrs, cdf_sinrs, capacities, cdf_capacities = simulate.run_simulation(load_file="results.npz")
-        all_sinrs.append(sinrs)
-        all_cdf_sinrs.append(cdf_sinrs)
-        all_capacities.append(capacities)
-        all_cdf_capacities.append(cdf_capacities)
-
-        axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{ues[__]} UEs, {aps[___]} APs, {len(channels[_])} Channels')
-        axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{ues[__]} UEs, {aps[___]} APs, {len(channels[_])} Channels') 
+    all_sinrs.append(sinrs)
+    all_cdf_sinrs.append(cdf_sinrs)
+    all_capacities.append(capacities)
+    all_cdf_capacities.append(cdf_capacities)
+  
+    axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{ue} UEs, {ap} APs, {len(ch)} Channels') 
+    axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{ue} UEs, {ap} APs,{len(ch)} Channels')
 
 axs[0].set_title('CDF - SINR')
 axs[0].grid(True)
 axs[0].legend(fontsize=6.5)
 
-axs[1].set_title('CDF - Capacity')
+axs[1].set_title('CDF - Capacidade')
 axs[1].grid(True)
 axs[1].legend(fontsize=6.5)
 
-plt.show() 
+plt.show()
