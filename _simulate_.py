@@ -394,10 +394,10 @@ if __name__ == "__main__":
 
  # Test for quantify variables of UEs, APs e Channels
 min_channels = 1
-max_channels = 3
+max_channels = 2
 
-aps = [16, 25]
-ues = [8, 10, 15]
+aps = [1, 4, 9, 16]
+ues = [10, 12]
 channels = []
 
 fig, axs = plt.subplots(1, 2, figsize=(12, 6))
@@ -412,11 +412,12 @@ while True:
 
 combinations_ues_aps_chs = list(itertools.product(ues, aps, channels))
 comb = []
-for _ in range(len(combinations_ues_aps_chs)):
+
+for _ in range(4):
   ue, ap, ch = random.choice(combinations_ues_aps_chs)
-  if ue not in comb and ap not in comb:
-    comb.append(ue)
-    comb.append(ap)
+  combs = [ue, ap, ch]
+  if combs not in comb:
+    comb.append(combs)
 
     simulate = Simulation(system, ue, ap, 100, ch)
     simulate.run_simulation(save_file='results.npz')
@@ -427,8 +428,8 @@ for _ in range(len(combinations_ues_aps_chs)):
     all_capacities.append(capacities)
     all_cdf_capacities.append(cdf_capacities)
   
-    axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{ue} UEs, {ap} APs, {len(ch)} Channels') 
-    axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{ue} UEs, {ap} APs,{len(ch)} Channels')
+    axs[0].plot(all_sinrs[_], all_cdf_sinrs[_], label=f'{ue} UEs, {ap} APs, {len(ch)} Channels') 
+    axs[1].plot(all_capacities[_], all_cdf_capacities[_], label=f'{ue} UEs, {ap} APs,{len(ch)} Channels')
 
 axs[0].set_title('CDF - SINR')
 axs[0].grid(True)
