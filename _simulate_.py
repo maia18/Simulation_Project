@@ -262,8 +262,8 @@ if __name__ == "__main__":
 
   while True:
 
-      channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1))
-      if len(channels_) not in [[a] for a in channels] and channels_ not in channels:
+      channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1)) # List of channels
+      if len(channels_) not in [[a] for a in channels] and channels_ not in channels: # Avoid list of channels with same lens
         channels.append(channels_)
         if len(channels) == max_channels:
           break
