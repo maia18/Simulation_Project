@@ -171,7 +171,6 @@ class Simulation: # Simulation
         sinrs = [] # List of SINRS results
         capacities = [] # List of CAPACITY results
         self.UE_position(system.ues) # Position UEs
-
         for j, ap in enumerate(system.aps):
           for i, ue in enumerate(system.ues):
             if self.distance(ue, ap) == system.distance_min(ue, ap):
@@ -212,8 +211,8 @@ if __name__ == "__main__":
   max_channels = 3 # Quantify max of channels
   channels = list() # Amount of channels
 
-  aps = [25, 36] # Amount of APs
-  ues = [4, 8] # Amount of UEs
+  aps = [49, 64] # Amount of APs
+  ues = [10, 12] # Amount of UEs
 
   fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
 
@@ -227,13 +226,12 @@ if __name__ == "__main__":
   combinations_ues_aps_chs = list(itertools.product(ues, aps, channels)) # combinations ues-aps-channels
   comb = [] # List of combinations
 
-  # Tests
-  for _ in range(1, len(aps)+len(ues)+(len(channels)-1)):
+  # test
+  for _ in range(len(channels)):
     ue, ap, ch = random.choice(combinations_ues_aps_chs) # Choose ue, ap and channel of list - combinations ues-aps-channels.
     combs = [ue, ap, ch]
     if combs not in comb: # Avoid sames combinations
       comb.append(combs) # Update list of combinations ues-aps-channels
-      print(f'Test {_} - {combs}')
 
       simulate = Simulation(system, ue, ap, 100, ch)
       simulate.run_simulation(save_file='results.npz')
