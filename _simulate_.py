@@ -248,30 +248,28 @@ if __name__ == "__main__":
 
   system = System() # System with ues, aps
 
-  min_channels = 1 # Quantify min of channels
-  max_channels = 3 # Quantify max of channels
+  # min_channels = 1 # Quantify min of channels
+  # max_channels = 3 # Quantify max of channels
 
-  aps = [36, 49, 64] # Amount of APs
-  ues = [12, 16] # Amount of UEs
-  channels = [] # Amount of channels
-  num_tests = random.randint(min_channels, len(aps)+len(ues)) # Num of tests
-  print(num_tests)
+  aps = [16] # Amount of APs
+  ues = [15] # Amount of UEs
+  channels = [[1], [1,2], [1,2,3], [1,2,3,4]] # Amount of channels
 
   fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
 
-  while True:
-      channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1)) # List of channels
-      if len(channels_) not in [[a] for a in channels] and channels_ not in channels: # Avoid list of channels with same lens
-        channels.append(channels_)
-        if len(channels) == max_channels:
-          break
-        
+  # while True:
+  #     channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1)) # List of channels
+  #     if len(channels_) not in [[a] for a in channels] and channels_ not in channels: # Avoid list of channels with same lens
+  #       channels.append(channels_)
+  #       if len(channels) == max_channels:
+  #         break
+
   combinations_ues_aps_chs = list(itertools.product(ues, aps, channels)) # combinations ues-aps-channels
   comb = [] # List of combinations
-  
+
   # Tests
 
-  for _ in range(num_tests):
+  for _ in range(1, len(aps)+len(ues)+(len(channels)-1)):
     ue, ap, ch = random.choice(combinations_ues_aps_chs) # Choose ue, ap and channel of list of the combinations ues-aps-channels
     combs = [ue, ap, ch]
     if combs not in comb: # Avoid sames combinations
