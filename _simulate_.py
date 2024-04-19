@@ -1,5 +1,5 @@
 # Simulation Monte Carlo - Cellular Wireless Communication Systems
-import numpy as np; import matplotlib.pyplot as plt; from math import sqrt,log10,log2,ceil; import itertools; import random
+import numpy as np; import matplotlib.pyplot as plt; from math import sqrt,log10,log2,ceil; import random
 
 class PointAcess: # Point Acess
 
@@ -7,8 +7,8 @@ class PointAcess: # Point Acess
 
     assert not isinstance(power_, (str, bool, list, tuple)) and ( power_ >= 0 ) # Power must be an number positive
     assert (type(coverage_area) == tuple) and ( len(coverage_area) >= 0 ) # Coverage area must be an tuple with len positive
-    self.__coveragearea = (coverage_area) # Coverage Area of AP
-    self.__power = power_ # Power of AP
+    self.__coveragearea = coverage_area # Coverage Area
+    self.__power = power_ # Power
 
   @property
   def coverage_area(self): # Get coverage area
@@ -40,7 +40,7 @@ class UserEquipments: # User Equipments
 
   def __init__(self, channel, power_=1):
 
-    assert not isinstance(power_, (str, bool, list, tuple)) and ( power_ >= 0 ) # Power must be an number positive
+    assert (not isinstance(power_, (str, bool, list, tuple))) and (( power_ >= 0 )) # Power must be an number positive
     self.__channel = channel # Channel
     self.__power = power_ # Power
 
@@ -66,8 +66,8 @@ class System: # System
 
   def __init__(self):
 
-    self.__aps = list()  # Point Acess
-    self.__ues = list()  # User Equipments
+    self.__aps = list() # Point Acess
+    self.__ues = list() # User Equipments
 
   @property
   def aps(self): # Get AP's
@@ -113,7 +113,6 @@ class Simulation: # Simulation
     self.n = 4 # Constant for the propagation model
 
   def distance(self, ue, ap): # Distance UE-AP
-
     while True:
       if isinstance(ue, UserEquipments):
         distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
@@ -126,7 +125,6 @@ class Simulation: # Simulation
           return distance_ue_ap ; break
 
   def AP_position(self, aps: list[PointAcess]): # Position AP
-
     assert (len(aps) > 0) and isinstance(aps, list) # Amount of APs must be bigger than zero
     for i in range(len(aps)):
         while True:
@@ -137,7 +135,6 @@ class Simulation: # Simulation
             break
 
   def UE_position(self, ues: list[UserEquipments]): # Position UE
-
     assert isinstance(ues, list) # ues must be an list of the PointAcess
     for i in range(len(ues)):
       while True:
@@ -147,16 +144,13 @@ class Simulation: # Simulation
           self.coords.append(ues[i].position_ue)
           break
 
-  def load_results(self, file_path): # Load results pf the simulation previou
-
+  def load_results(self, file_path): # Load results of the simulation previou
     data = np.load(file_path)
     return data['sinrs'], data['cdf_sinrs'], data['capacities'], data['cdf_capacities']
 
   def run_simulation(self, save_file=None, load_file=None): # Run Simulation
-
     if load_file: # Load results
       sinrs_sorted, cdf_sinrs, capacities_sorted, cdf_capacities = self.load_results(load_file)
-
     else: # Simulation unprecedented
       system.aps = [PointAcess((1000, 1000), 10) for i in range(self.num_aps)] # APs
       system.ues = [UserEquipments(np.random.choice(self.channels)) for j in range(self.num_ues)] # UEs'
@@ -171,8 +165,8 @@ class Simulation: # Simulation
         sinrs = [] # List of SINRS results
         capacities = [] # List of CAPACITY results
         self.UE_position(system.ues) # Position UEs
-        for j, ap in enumerate(system.aps):
-          for i, ue in enumerate(system.ues):
+        for __, ap in enumerate(system.aps):
+          for ___, ue in enumerate(system.ues):
             if self.distance(ue, ap) == system.distance_min(ue, ap):
               power = (ue.power * (self.k / (self.distance(ue, ap) ** (4)))) # Power in Watts
               interference_ = 0
@@ -180,11 +174,8 @@ class Simulation: # Simulation
                 if ((others_ues.get_channel() == ue.get_channel()) and (others_ues != ue)):
                   interference_ += (((others_ues.power * (self.k / (self.distance(others_ues, ap) ** (4)))))) # interference totally
                   if interference_ > 0:
-                    sinr = ((power / (interference_ + self.noise_power)))
-                    sinr_db = 10 * log10(sinr)
-                    capacity = ((self.bt / len(self.channels)) * (log2(1 + ((power / (interference_ + self.noise_power)))))) # Capacity
-                    capacities.append(capacity)
-                    sinrs.append(sinr_db)
+                    sinr = ((power / (interference_ + self.noise_power))) ; sinr_db = 10 * log10(sinr) ; sinrs.append(sinr_db) # SINR
+                    capacity = ((self.bt / len(self.channels)) * (log2(1 + sinr))) ; capacities.append(capacity) # Capacity
 
         sinrs_totallys.extend(sinrs)
         capacities_totallys.extend(capacities)
@@ -194,44 +185,35 @@ class Simulation: # Simulation
         cdf_capacities = np.linspace(0, 1, len(capacities_sorted))
 
       if save_file: # Save results
-        np.savez(save_file, sinrs=sinrs_sorted, cdf_sinrs=cdf_sinrs, capacities=capacities_sorted, cdf_capacities=cdf_capacities)
+        np.savez(save_file, sinrs=sinrs_sorted, cdf_sinrs=cdf_sinrs, capacities=capacities_sorted, cdf_capacities=cdf_capacities)     
     return sinrs_sorted, cdf_sinrs, capacities_sorted, cdf_capacities # Return results
 
 
 if __name__ == "__main__":
-
-  system = System() # System with ues, aps
+  
+  system = System() # System with ues, aps.
   
   all_sinrs = [] # All SINRs
   all_cdf_sinrs = [] # All CDF of SINRS
   all_capacities = [] # All CAPACITIES
   all_cdf_capacities = [] # All CDF of CAPACITIES
 
-  min_channels = 1 # Quantify min of channels
-  max_channels = 3 # Quantify max of channels
-  channels = list() # Amount of channels
+  max_test = 5 # Quantify max of tests
 
-  aps = [49, 64] # Amount of APs
-  ues = [10, 12] # Amount of UEs
+  aps = [1, 4, 9, 16, 25, 36, 49, 64] # Amount of APs
+  ues = [4, 8, 10, 12, 15, 20, 25, 50] # Amount of UEs
+  channels = [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4], [1, 2, 3, 4, 5]] # Amount of channels
 
   fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
 
-  while True:
-      channels_ = list(range(min_channels, np.random.randint(min_channels, max_channels+1) + 1)) # List of channels
-      if len(channels_) not in [[a] for a in channels] and channels_ not in channels: # Avoid list of channels with same lens
-        channels.append(channels_)
-        if len(channels) == max_channels:
-          break
-
-  combinations_ues_aps_chs = list(itertools.product(ues, aps, channels)) # combinations ues-aps-channels
-  comb = [] # List of combinations
-
-  # test
-  for _ in range(len(channels)):
-    ue, ap, ch = random.choice(combinations_ues_aps_chs) # Choose ue, ap and channel of list - combinations ues-aps-channels.
+  comb = [] # List of combinations ue-ap-channel
+  for i in range(1, max_test):
+    ue, ap, ch = random.choice(ues),random.choice(aps),random.choice(channels)
     combs = [ue, ap, ch]
     if combs not in comb: # Avoid sames combinations
-      comb.append(combs) # Update list of combinations ues-aps-channels
+      comb.append(combs)
+
+      print(f'Test {i} - {combs}')
 
       simulate = Simulation(system, ue, ap, 100, ch)
       simulate.run_simulation(save_file='results.npz')
@@ -241,14 +223,14 @@ if __name__ == "__main__":
       all_cdf_sinrs.append(cdf_sinrs)
       all_capacities.append(capacities)
       all_cdf_capacities.append(cdf_capacities)
-    
+
       axs[0].plot(all_sinrs[-1], all_cdf_sinrs[-1], label=f'{ue} UEs, {ap} APs, {len(ch)} Channels') 
       axs[1].plot(all_capacities[-1], all_cdf_capacities[-1], label=f'{ue} UEs, {ap} APs,{len(ch)} Channels')
 
-  axs[0].set_title('CDF - SINR')
-  axs[0].grid(True)
-  axs[0].legend(fontsize=6.5)
-  axs[1].set_title('CDF - Capacidade')
-  axs[1].grid(True)
-  axs[1].legend(fontsize=6.5)
-  plt.show()
+axs[0].set_title('CDF - SINR')
+axs[0].grid(True)
+axs[0].legend(fontsize=6.5)
+axs[1].set_title('CDF - Capacity')
+axs[1].grid(True)
+axs[1].legend(fontsize=6.5)
+plt.show()
