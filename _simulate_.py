@@ -35,10 +35,9 @@ class PointAcess: # Point Acess
     self.__coveragearea[self.__position[0]:self.__position[0] + 10, self.__position[1]:self.__position[1] + 10] = 1
     return self.__position
 
-
 class UserEquipments: # User Equipments
 
-  def __init__(self, channel, power_=1):
+  def __init__(self, channel=None, power_=1):
 
     assert (not isinstance(power_, (str, bool, list, tuple))) and (( power_ >= 0 )) # Power must be an number positive
     self.__channel = channel # Channel
@@ -58,9 +57,8 @@ class UserEquipments: # User Equipments
     self.__position = position_
     return self.__position
 
-  def get_channel(self): # Get channel
+  def channel(self): # Channel
     return self.__channel
-
 
 class System: # System
 
@@ -87,11 +85,6 @@ class System: # System
     assert isinstance(ues_, list) # UE must be an instance of the class UserEquipments for be add on the list
     self.__ues.extend(ues_)
 
-  def distance_min(self, ue, ap): # Distance min
-    distances_ue_ap_min = [sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2) for ap in self.__aps]
-    return min(distances_ue_ap_min)
-
-
 class Simulation: # Simulation
 
   def __init__(self, system:System, num_ues, num_aps, num_sms:int, channels=list(range(1,4))):
@@ -108,21 +101,26 @@ class Simulation: # Simulation
     self.noise_power = ((((10**(-20))) * ((10**(8)) / len(self.channels)))) # Noise power
     self.bt = (10**(8)) # Total available bandwidth ( 100MHz = 10^(8)Hz )
     self.ko = (10**(-20)) # Constant for the noise power ( 10^(-17)miliwatts/Hz = 10^(-20)watts/Hz )
-    self.do = 1 # fixed reference distance ( 1 meter )
     self.k = (10**(-4)) # Constant for the propagation model
     self.n = 4 # Constant for the propagation model
 
-  def distance(self, ue, ap): # Distance UE-AP
-    while True:
-      if isinstance(ue, UserEquipments):
-        distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2)
-        if (distance_ue_ap >= self.do):
-          return distance_ue_ap ; break
-        
-      elif isinstance(ue, tuple):
-        distance_ue_ap = sqrt((ue[0] - ap.position_ap[0]) ** 2 + (ue[1] - ap.position_ap[1]) ** 2)
-        if (distance_ue_ap >= self.do):
-          return distance_ue_ap ; break
+  def distance(self, ues:list[UserEquipments], aps:list[PointAcess]): # Distance UE-AP
+    distances_ = {} # Dict of distances
+    distances_min = {} # Dict of distances min
+
+    for _, ue in enumerate(ues): # Ues
+      for __, ap in enumerate(aps): # Aps
+        distance_ue_ap = sqrt((ue.position_ue[0] - ap.position_ap[0]) ** 2 + (ue.position_ue[1] - ap.position_ap[1]) ** 2) # Distance ue-ap
+        if (distance_ue_ap) >= 1 and distance_ue_ap not in distances_: # Avoid sames distances
+            distances_[f'UE {_+1} - AP {__+1}'] = distance_ue_ap # Add the distance on the list of distances
+    for key, value in distances_.items(): # Acess the Dict of distances min
+      ue = key.split(' - ')[0] # Number of UE
+      if ue not in distances_min: # Avoid sames ues
+          distances_min[ue] = value # Distance min
+      else:
+          if value < distances_min[ue]: # Avoid sames Distance min
+              distances_min[ue] = value
+    return list(distances_min.values()) # Return a list of distances min
 
   def AP_position(self, aps: list[PointAcess]): # Position AP
     assert (len(aps) > 0) and isinstance(aps, list) # Amount of APs must be bigger than zero
@@ -149,6 +147,7 @@ class Simulation: # Simulation
     return data['sinrs'], data['cdf_sinrs'], data['capacities'], data['cdf_capacities']
 
   def run_simulation(self, save_file=None, load_file=None): # Run Simulation
+    
     if load_file: # Load results
       sinrs_sorted, cdf_sinrs, capacities_sorted, cdf_capacities = self.load_results(load_file)
     else: # Simulation unprecedented
@@ -165,17 +164,17 @@ class Simulation: # Simulation
         sinrs = [] # List of SINRS results
         capacities = [] # List of CAPACITY results
         self.UE_position(system.ues) # Position UEs
-        for __, ap in enumerate(system.aps):
-          for ___, ue in enumerate(system.ues):
-            if self.distance(ue, ap) == system.distance_min(ue, ap):
-              power = (ue.power * (self.k / (self.distance(ue, ap) ** (4)))) # Power in Watts
-              interference_ = 0
-              for k_, others_ues in enumerate(system.ues):
-                if ((others_ues.get_channel() == ue.get_channel()) and (others_ues != ue)):
-                  interference_ += (((others_ues.power * (self.k / (self.distance(others_ues, ap) ** (4)))))) # interference totally
-                  if interference_ > 0:
-                    sinr = ((power / (interference_ + self.noise_power))) ; sinr_db = 10 * log10(sinr) ; sinrs.append(sinr_db) # SINR
-                    capacity = ((self.bt / len(self.channels)) * (log2(1 + sinr))) ; capacities.append(capacity) # Capacity
+        interference_ = 0
+        for distance__ in self.distance(system.ues, system.aps):
+          power = (UserEquipments().power * (self.k / (distance__ ** (4)))) # Power in Watts
+        for ue in system.ues:
+          other_ues_ = [other_ue for other_ue in system.ues if other_ue != ue]
+        for _, other_ue in enumerate(other_ues_):
+          if other_ue.channel() == ue.channel():
+            interference_ += (((other_ue.power * (self.k / ((self.distance(other_ues_, system.aps)[_]) ** (4))))))
+            if interference_ > 0:
+              sinr = ((power / (interference_ + self.noise_power))) ; sinr_db = 10 * log10(sinr) ; sinrs.append(sinr_db) # SINR
+              capacity = ((self.bt / len(self.channels)) * (log2(1 + sinr))) ; capacities.append(capacity) # Capacity
 
         sinrs_totallys.extend(sinrs)
         capacities_totallys.extend(capacities)
@@ -187,7 +186,6 @@ class Simulation: # Simulation
       if save_file: # Save results
         np.savez(save_file, sinrs=sinrs_sorted, cdf_sinrs=cdf_sinrs, capacities=capacities_sorted, cdf_capacities=cdf_capacities)     
     return sinrs_sorted, cdf_sinrs, capacities_sorted, cdf_capacities # Return results
-
 
 if __name__ == "__main__":
   
@@ -202,7 +200,7 @@ if __name__ == "__main__":
 
   aps = [1, 4, 9, 16, 25, 36, 49, 64] # Amount of APs
   ues = [4, 8, 10, 12, 15, 20, 25, 50] # Amount of UEs
-  channels = [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4], [1, 2, 3, 4, 5]] # Amount of channels
+  channels = [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4]] # Amount of channels
 
   fig, axs = plt.subplots(1, 2, figsize=(12, 6)) # Graphic
 
@@ -212,8 +210,6 @@ if __name__ == "__main__":
     combs = [ue, ap, ch]
     if combs not in comb: # Avoid sames combinations
       comb.append(combs)
-
-      print(f'Test {i} - {combs}')
 
       simulate = Simulation(system, ue, ap, 100, ch)
       simulate.run_simulation(save_file='results.npz')
